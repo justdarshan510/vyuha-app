@@ -134,8 +134,13 @@ export default function LandingScreen() {
 
             <Image 
               source={require('../../assets/images/landing_doctor_new.png')}
-              style={[styles.visualImage, isTablet && styles.visualImageTablet, isMobile && styles.visualImageMobile]}
-              resizeMode={isMobile ? "cover" : "contain"}
+              style={[
+                styles.visualImage, 
+                isTablet && styles.visualImageTablet, 
+                isMobile && styles.visualImageMobile,
+                { right: '5%', bottom: '-5%' }
+              ]}
+              resizeMode={"contain"}
             />
           </View>
 
