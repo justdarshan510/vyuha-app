@@ -275,23 +275,22 @@ export default function LandingScreen() {
             )}
           </View>
           
-          {/* Right Visuals */}
-          <View style={[styles.heroVisual, isMobile && styles.heroVisualMobile]}>
-            <View style={[
-              styles.visualShape, 
-              isMobile && styles.visualShapeMobile,
-              Platform.OS === 'web' && !isMobile
-                ? { clipPath: 'polygon(45% 0%, 100% 0%, 100% 100%, 0% 100%)' } as any
-                : {}
-            ]}>
-              {/* Background circles on the teal shape */}
-              <View style={[styles.shapeCircle, styles.shapeCircle1, isMobile && styles.shapeCircle1Mobile]} />
-              <View style={[styles.shapeCircle, styles.shapeCircle2, isMobile && styles.shapeCircle2Mobile]} />
-              <View style={[styles.shapeCircle, styles.shapeCircle3, isMobile && styles.shapeCircle3Mobile]} />
-            </View>
+          {/* Right Visuals - Desktop and Tablet Only */}
+          {!isMobile && (
+            <View style={styles.heroVisual}>
+              <View style={[
+                styles.visualShape, 
+                Platform.OS === 'web'
+                  ? { clipPath: 'polygon(45% 0%, 100% 0%, 100% 100%, 0% 100%)' } as any
+                  : {}
+              ]}>
+                {/* Background circles on the teal shape */}
+                <View style={[styles.shapeCircle, styles.shapeCircle1]} />
+                <View style={[styles.shapeCircle, styles.shapeCircle2]} />
+                <View style={[styles.shapeCircle, styles.shapeCircle3]} />
+              </View>
 
-            {/* Reactive Floating Telemetry Card 1 */}
-            {!isMobile && (
+              {/* Reactive Floating Telemetry Card 1 */}
               <Animated.View style={[
                 styles.telemetryCardTop,
                 { transform: [{ translateY: floatAnim1 }] }
@@ -304,10 +303,8 @@ export default function LandingScreen() {
                   <Text style={styles.telemetryTitle}>84% • Critical Escalation</Text>
                 </View>
               </Animated.View>
-            )}
 
-            {/* Reactive Floating Telemetry Card 2 */}
-            {!isMobile && (
+              {/* Reactive Floating Telemetry Card 2 */}
               <Animated.View style={[
                 styles.telemetryCardBottom,
                 { transform: [{ translateY: floatAnim2 }] }
@@ -320,19 +317,17 @@ export default function LandingScreen() {
                   <Text style={styles.telemetryTitle}>Meropenem Active (0.2s)</Text>
                 </View>
               </Animated.View>
-            )}
 
-            <Image 
-              source={require('../../assets/images/doctor_female_transparent_cropped.png')}
-              style={[
-                styles.visualImage, 
-                isTablet && styles.visualImageTablet, 
-                isMobile && styles.visualImageMobile,
-                isSmallMobile && styles.visualImageSmallMobile
-              ]}
-              resizeMode="contain"
-            />
-          </View>
+              <Image 
+                source={require('../../assets/images/doctor_female_transparent_cropped.png')}
+                style={[
+                  styles.visualImage, 
+                  isTablet && styles.visualImageTablet
+                ]}
+                resizeMode="contain"
+              />
+            </View>
+          )}
 
         </View>
       </ScrollView>
@@ -647,11 +642,12 @@ const styles = StyleSheet.create({
   },
   heroMobile: {
     flexDirection: 'column',
-    paddingLeft: 18,
-    paddingRight: 18,
-    paddingTop: 16,
-    paddingBottom: 30,
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 40,
     minHeight: 'auto' as any,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   heroContent: {
     flex: 1,
@@ -660,10 +656,10 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   heroContentMobile: {
-    maxWidth: '100%',
+    maxWidth: 520,
     textAlign: 'center',
     alignItems: 'center',
-    marginBottom: 36,
+    marginBottom: 0,
     paddingRight: 0,
     width: '100%',
   },
