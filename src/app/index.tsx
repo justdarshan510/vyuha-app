@@ -132,16 +132,26 @@ export default function LandingScreen() {
               <View style={[styles.shapeCircle, styles.shapeCircle3]} />
             </View>
 
-            <Image 
-              source={require('../../assets/images/landing_doctor_new.png')}
-              style={[
+            <View style={[
                 styles.visualImage, 
                 isTablet && styles.visualImageTablet, 
                 isMobile && styles.visualImageMobile,
-                { right: '5%', bottom: '-5%', borderRadius: 24, boxShadow: '0px 20px 40px rgba(0,0,0,0.1)' } as any
-              ]}
-              resizeMode={"contain"}
-            />
+                { 
+                  right: '5%', 
+                  bottom: '15%', 
+                  borderRadius: 24, 
+                  overflow: 'hidden', 
+                  boxShadow: '0px 20px 40px rgba(0,0,0,0.15)',
+                  height: 'auto',
+                  aspectRatio: 1024 / 426
+                } as any
+              ]}>
+              <Image 
+                source={require('../../assets/images/landing_doctor_new.png')}
+                style={{ width: '100%', height: '100%' }}
+                resizeMode={"cover"}
+              />
+            </View>
           </View>
 
         </View>
