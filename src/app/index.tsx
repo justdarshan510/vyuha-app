@@ -110,32 +110,10 @@ export default function LandingScreen() {
           
           {/* Right Visuals */}
           <View style={[styles.heroVisual, isMobile && styles.heroVisualMobile]}>
-            <View style={[
-              styles.visualShape, 
-              isMobile ? styles.visualShapeMobile : null,
-              Platform.OS === 'web' 
-                ? { clipPath: isMobile ? 'polygon(0 15%, 100% 0, 100% 100%, 0 100%)' : 'polygon(45% 0, 100% 0, 100% 100%, 0% 100%)' } as any
-                : {}
-            ]}>
-              {/* Fallback for Native if clipPath is missing: absolute SVG to cover the clipped area */}
-              {Platform.OS !== 'web' && (
-                <View style={StyleSheet.absoluteFill}>
-                  <Svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100">
-                    <Polygon points={isMobile ? "0,15 100,0 100,100 0,100" : "45,0 100,0 100,100 0,100"} fill="#65dfd2" />
-                  </Svg>
-                </View>
-              )}
-
-              {/* Background circles on the teal shape */}
-              <View style={[styles.shapeCircle, styles.shapeCircle1]} />
-              <View style={[styles.shapeCircle, styles.shapeCircle2]} />
-              <View style={[styles.shapeCircle, styles.shapeCircle3]} />
-            </View>
-
             <Image 
-              source={require('../../assets/images/doctor_female_transparent_cropped.png')}
-              style={[styles.visualImage, isTablet && styles.visualImageTablet, isMobile && styles.visualImageMobile]}
-              resizeMode={isMobile ? "cover" : "contain"}
+              source={require('../../assets/images/landing_doctor_new.png')}
+              style={[{ width: '100%', height: '100%', borderRadius: 24, overflow: 'hidden' }, isTablet && styles.visualImageTablet, isMobile && styles.visualImageMobile]}
+              resizeMode="contain"
             />
           </View>
 
