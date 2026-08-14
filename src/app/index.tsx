@@ -129,29 +129,16 @@ export default function LandingScreen() {
               {/* Background circles on the teal shape */}
               <View style={[styles.shapeCircle, styles.shapeCircle1]} />
               <View style={[styles.shapeCircle, styles.shapeCircle2]} />
-              <View style={[styles.shapeCircle, styles.shapeCircle3]} />
-            </View>
-
-            <View style={[
+            <Image 
+              source={require('../../assets/images/landing_doctor_new.png')}
+              style={[
                 styles.visualImage, 
                 isTablet && styles.visualImageTablet, 
                 isMobile && styles.visualImageMobile,
-                { 
-                  right: '5%', 
-                  bottom: '15%', 
-                  borderRadius: 24, 
-                  overflow: 'hidden', 
-                  boxShadow: '0px 20px 40px rgba(0,0,0,0.15)',
-                  height: 'auto',
-                  aspectRatio: 1024 / 426
-                } as any
-              ]}>
-              <Image 
-                source={require('../../assets/images/landing_doctor_new.png')}
-                style={{ width: '100%', height: '100%' }}
-                resizeMode={"cover"}
-              />
-            </View>
+                { right: '5%', bottom: '-5%' }
+              ]}
+              resizeMode={"contain"}
+            />
           </View>
 
         </View>
