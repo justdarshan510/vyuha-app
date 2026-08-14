@@ -19,16 +19,18 @@ import {
 } from 'lucide-react-native';
 import Svg, { Circle, Rect, Path, G } from 'react-native-svg';
 
-import { useAuth } from '../context/AuthContext';
-import { useAppState } from '../context/AppStateContext';
+import { useAuth } from '../../context/AuthContext';
+import { MOCK_PATIENTS } from '../../data/mockData';
+import { useLocalSearchParams, router } from 'expo-router';
 
-export default function DashboardScreen() {
+export default function PatientDetailScreen() {
   const { width } = useWindowDimensions();
   const isTablet = width <= 1280;
   const isMobile = width <= 1024;
   
   const { userRole, logout } = useAuth();
-  const { activePatient } = useAppState();
+  const { id } = useLocalSearchParams();
+  const activePatient = MOCK_PATIENTS.find(p => p.id === id) || MOCK_PATIENTS[0];
 
   const [activeNav, setActiveNav] = useState('overview');
   const [showNotif, setShowNotif] = useState(false);
@@ -95,22 +97,16 @@ export default function DashboardScreen() {
             <View style={styles.contentHeader}>
               <View style={styles.userGreeting}>
                 <Text style={styles.greetingSubtitle}>Hi, {userRole === 'DOCTOR' ? 'Dr. Sakif' : 'Clinician'}</Text>
-                <Text style={styles.greetingTitle}>Welcome Back!</Text>
+                <Text style={styles.greetingTitle}>Patient Record</Text>
               </View>
               
               <View style={styles.headerActions}>
-                {/* Patient Selector Pill */}
-                <TouchableOpacity style={styles.patientPill}>
-                  <View style={styles.patientAvatar}>
-                    <Text style={styles.patientAvatarText}>
-                      {activePatient?.name?.split(' ').map(n => n[0]).join('') || '??'}
-                    </Text>
-                  </View>
+                {/* Back to Staff Portal Button */}
+                <TouchableOpacity style={styles.patientPill} onPress={() => router.back()}>
+                  <ChevronLeft color="#64748b" size={16} />
                   <View style={styles.patientMeta}>
-                    <Text style={styles.patientTitle}>{activePatient?.name || 'No Patient'}</Text>
-                    <Text style={styles.patientSub}>ICU Bed 4 • ID: #948271</Text>
+                    <Text style={styles.patientTitle}>Back to Staff Portal</Text>
                   </View>
-                  <ChevronDown color="#64748b" size={16} />
                 </TouchableOpacity>
 
                 {/* Notification Bell */}

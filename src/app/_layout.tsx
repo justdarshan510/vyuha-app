@@ -8,6 +8,8 @@ import {
   PlusJakartaSans_700Bold, 
   PlusJakartaSans_800ExtraBold 
 } from '@expo-google-fonts/plus-jakarta-sans';
+import { AuthProvider } from '../context/AuthContext';
+import { AppStateProvider } from '../context/AppStateContext';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -25,10 +27,15 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="auth" />
-      <Stack.Screen name="dashboard" />
-    </Stack>
+    <AuthProvider>
+      <AppStateProvider>
+        <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="login" />
+          <Stack.Screen name="dashboard" />
+          <Stack.Screen name="staff" />
+        </Stack>
+      </AppStateProvider>
+    </AuthProvider>
   );
 }

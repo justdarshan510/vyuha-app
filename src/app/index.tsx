@@ -9,7 +9,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import { Play, Building2, Users, ClipboardCheck } from 'lucide-react-native';
+import { Play, Activity, Microscope, ShieldAlert } from 'lucide-react-native';
 import { Link } from 'expo-router';
 import Svg, { Polygon } from 'react-native-svg';
 
@@ -38,18 +38,10 @@ export default function LandingScreen() {
             </TouchableOpacity>
           </Link>
           
-          {!isMobile && (
-            <View style={styles.navLinks}>
-              <TouchableOpacity><Text style={styles.navLink}>Features</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.navLink}>Integrations</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.navLink}>Security</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.navLink}>API</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.navLink}>About</Text></TouchableOpacity>
-            </View>
-          )}
+
 
           <View style={styles.navActions}>
-            <Link href="/auth" asChild>
+            <Link href={"/portals" as any} asChild>
               <TouchableOpacity style={styles.btnLogin}>
                 <Text style={styles.btnLoginText}>Login / Sign Up</Text>
               </TouchableOpacity>
@@ -63,54 +55,54 @@ export default function LandingScreen() {
           {/* Left Content */}
           <View style={[styles.heroContent, isMobile && styles.heroContentMobile]}>
             <Text style={[styles.heroTitle, isTablet && styles.heroTitleTablet]}>
-              Empowering Clinical Decisions with Precision
+              Antimicrobial Resistance (AMR) Clinical Decision Support
             </Text>
             <Text style={styles.heroSubtitle}>
-              Advanced, real-time insights for healthcare professionals to provide exceptional, data-driven patient care.
+              Real-time risk stratification, antibiotic exposure telemetry, and clinical override protocols for critical care units.
             </Text>
             
             <View style={[styles.heroButtons, isMobile && styles.heroButtonsMobile]}>
-              <Link href="/auth" asChild>
+              <Link href={"/portals" as any} asChild>
                 <TouchableOpacity style={styles.btnPrimary}>
-                  <Text style={styles.btnPrimaryText}>Get Started</Text>
+                  <Text style={styles.btnPrimaryText}>Access Portals</Text>
                 </TouchableOpacity>
               </Link>
               <TouchableOpacity style={styles.btnSecondary}>
                 <View style={styles.iconWrapper}>
                   <Play color="#65dfd2" size={18} fill="#65dfd2" />
                 </View>
-                <Text style={styles.btnSecondaryText}>Request Demo</Text>
+                <Text style={styles.btnSecondaryText}>View Demo</Text>
               </TouchableOpacity>
             </View>
             
             <View style={[styles.heroStats, isTablet && styles.heroStatsTablet, isMobile && styles.heroStatsMobile]}>
               <View style={styles.statItem}>
                 <View style={styles.statIcon}>
-                  <Building2 color="#ffffff" size={22} />
+                  <Activity color="#ffffff" size={22} />
                 </View>
                 <View style={styles.statInfo}>
-                  <Text style={styles.statValue}>50+</Text>
-                  <Text style={styles.statLabel}>Integrations</Text>
+                  <Text style={styles.statValue}>0.2s</Text>
+                  <Text style={styles.statLabel}>Risk Stratification</Text>
                 </View>
               </View>
               
               <View style={styles.statItem}>
                 <View style={styles.statIcon}>
-                  <Users color="#ffffff" size={22} />
+                  <Microscope color="#ffffff" size={22} />
                 </View>
                 <View style={styles.statInfo}>
-                  <Text style={styles.statValue}>2K+</Text>
-                  <Text style={styles.statLabel}>Providers</Text>
+                  <Text style={styles.statValue}>12+</Text>
+                  <Text style={styles.statLabel}>Live Biomarkers</Text>
                 </View>
               </View>
               
               <View style={styles.statItem}>
                 <View style={styles.statIcon}>
-                  <ClipboardCheck color="#ffffff" size={22} />
+                  <ShieldAlert color="#ffffff" size={22} />
                 </View>
                 <View style={styles.statInfo}>
-                  <Text style={styles.statValue}>99%</Text>
-                  <Text style={styles.statLabel}>Accuracy</Text>
+                  <Text style={styles.statValue}>100%</Text>
+                  <Text style={styles.statLabel}>Override Logging</Text>
                 </View>
               </View>
             </View>
@@ -122,14 +114,14 @@ export default function LandingScreen() {
               styles.visualShape, 
               isMobile ? styles.visualShapeMobile : null,
               Platform.OS === 'web' 
-                ? { clipPath: isMobile ? 'polygon(0 15%, 100% 0, 100% 100%, 0 100%)' : 'polygon(18% 0, 100% 0, 100% 100%, 0% 100%)' } as any
+                ? { clipPath: isMobile ? 'polygon(0 15%, 100% 0, 100% 100%, 0 100%)' : 'polygon(45% 0, 100% 0, 100% 100%, 0% 100%)' } as any
                 : {}
             ]}>
               {/* Fallback for Native if clipPath is missing: absolute SVG to cover the clipped area */}
               {Platform.OS !== 'web' && (
                 <View style={StyleSheet.absoluteFill}>
                   <Svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100">
-                    <Polygon points={isMobile ? "0,15 100,0 100,100 0,100" : "18,0 100,0 100,100 0,100"} fill="#65dfd2" />
+                    <Polygon points={isMobile ? "0,15 100,0 100,100 0,100" : "45,0 100,0 100,100 0,100"} fill="#65dfd2" />
                   </Svg>
                 </View>
               )}
@@ -191,7 +183,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 60,
-    paddingVertical: 24,
+    paddingVertical: 16,
     zIndex: 10,
   },
   navbarMobile: {
@@ -202,8 +194,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoImg: {
-    height: 140,
-    width: 280, // Approximate width for logo aspect ratio
+    height: 80,
+    width: 160,
   },
   navLinks: {
     flexDirection: 'row',
@@ -238,7 +230,7 @@ const styles = StyleSheet.create({
   hero: {
     flexDirection: 'row',
     flex: 1,
-    minHeight: Platform.OS === 'web' ? 'calc(100vh - 128px)' : 600,
+    minHeight: Platform.OS === 'web' ? 'calc(100vh - 112px)' as any : 600,
     paddingLeft: 80,
     alignItems: 'center',
     position: 'relative',
@@ -264,29 +256,29 @@ const styles = StyleSheet.create({
     paddingRight: 0,
   },
   heroTitle: {
-    fontSize: 60.8, // 3.8rem
+    fontSize: 48,
     fontWeight: '800',
     color: '#1f2937',
-    lineHeight: 70, // 1.15
-    marginBottom: 24,
-    letterSpacing: -1.2,
+    lineHeight: 56,
+    marginBottom: 16,
+    letterSpacing: -1,
   },
   heroTitleTablet: {
     fontSize: 44.8, // 2.8rem
     lineHeight: 52,
   },
   heroSubtitle: {
-    fontSize: 17.6, // 1.1rem
+    fontSize: 16,
     color: '#6b7280',
-    lineHeight: 30, // 1.7
-    marginBottom: 40,
+    lineHeight: 24,
+    marginBottom: 24,
     maxWidth: 500,
   },
   heroButtons: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 24,
-    marginBottom: 60,
+    marginBottom: 32,
   },
   heroButtonsMobile: {
     justifyContent: 'center',
@@ -376,7 +368,7 @@ const styles = StyleSheet.create({
   },
   visualShape: {
     position: 'absolute',
-    top: -150,
+    top: -112,
     bottom: 0,
     right: 0,
     left: 0,

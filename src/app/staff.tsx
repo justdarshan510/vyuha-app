@@ -21,24 +21,40 @@ import Svg, { Circle, Rect, Path, G } from 'react-native-svg';
 
 import { useAuth } from '../context/AuthContext';
 import { useAppState } from '../context/AppStateContext';
+import { router } from 'expo-router';
 
-export default function DashboardScreen() {
+export default function StaffPortalScreen() {
   const { width } = useWindowDimensions();
   const isTablet = width <= 1280;
   const isMobile = width <= 1024;
   
   const { userRole, logout } = useAuth();
-  const { activePatient } = useAppState();
+  const { patients, addPatient } = useAppState();
 
   const [activeNav, setActiveNav] = useState('overview');
   const [showNotif, setShowNotif] = useState(false);
-  const [showOverrideModal, setShowOverrideModal] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [showAddMetricModal, setShowAddMetricModal] = useState(false);
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [heroAccepted, setHeroAccepted] = useState(false);
-  const [heroOverridden, setHeroOverridden] = useState(false);
-  const [telemetryTab, setTelemetryTab] = useState<'levels' | 'trend'>('levels');
+  
+  // Add Patient Modal State
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newPatientName, setNewPatientName] = useState('');
+  const [newPatientAge, setNewPatientAge] = useState('');
+  const [newPatientGender, setNewPatientGender] = useState('M');
+  const [newPatientDiag, setNewPatientDiag] = useState('');
+
+  const handleAddPatient = () => {
+    addPatient({
+      name: newPatientName || 'Unknown Patient',
+      age: parseInt(newPatientAge) || 30,
+      gender: newPatientGender,
+      primaryDiagnosis: newPatientDiag || 'Observation',
+      amrRiskScore: Math.floor(Math.random() * 100) // random score for new patient
+    });
+    setShowAddModal(false);
+    setNewPatientName('');
+    setNewPatientAge('');
+    setNewPatientGender('M');
+    setNewPatientDiag('');
+  };
 
   return (
     <LinearGradient colors={['#e6fffa', '#b2f5ea', '#81e6d9']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.body}>
@@ -95,22 +111,13 @@ export default function DashboardScreen() {
             <View style={styles.contentHeader}>
               <View style={styles.userGreeting}>
                 <Text style={styles.greetingSubtitle}>Hi, {userRole === 'DOCTOR' ? 'Dr. Sakif' : 'Clinician'}</Text>
-                <Text style={styles.greetingTitle}>Welcome Back!</Text>
+                <Text style={styles.greetingTitle}>Patient Records</Text>
               </View>
               
               <View style={styles.headerActions}>
-                {/* Patient Selector Pill */}
-                <TouchableOpacity style={styles.patientPill}>
-                  <View style={styles.patientAvatar}>
-                    <Text style={styles.patientAvatarText}>
-                      {activePatient?.name?.split(' ').map(n => n[0]).join('') || '??'}
-                    </Text>
-                  </View>
-                  <View style={styles.patientMeta}>
-                    <Text style={styles.patientTitle}>{activePatient?.name || 'No Patient'}</Text>
-                    <Text style={styles.patientSub}>ICU Bed 4 • ID: #948271</Text>
-                  </View>
-                  <ChevronDown color="#64748b" size={16} />
+                <TouchableOpacity style={styles.addPatientBtn} onPress={() => setShowAddModal(true)}>
+                  <Plus color="#ffffff" size={16} />
+                  <Text style={styles.addPatientBtnText}>Add Record</Text>
                 </TouchableOpacity>
 
                 {/* Notification Bell */}
@@ -153,403 +160,126 @@ export default function DashboardScreen() {
               </View>
             </View>
 
-            {/* Hero Clinical Recommendation Banner */}
-            <LinearGradient colors={['#4fd1c5', '#38b2ac']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.heroBanner}>
-              <View style={[styles.heroContent, isMobile && styles.heroContentMobile]}>
-                <View style={styles.heroTag}>
-                  <View style={styles.tagPulse} />
-                  <Text style={styles.tagText}>AI Clinical Decision Support</Text>
-                </View>
-                <Text style={styles.heroHeading}>High AMR Risk Detected: Escalation Recommended</Text>
-                <Text style={styles.heroDesc}>
-                  Consider escalating from <Text style={{fontFamily: 'Inter_700Bold'}}>Ceftriaxone</Text> to <Text style={{fontFamily: 'Inter_700Bold'}}>Meropenem</Text> due to increasing AMR risk index (84%) and recent broad-spectrum beta-lactam exposure.
-                </Text>
-                
-                {(!heroAccepted && !heroOverridden) && (
-                  <View style={styles.heroActions}>
-                    <TouchableOpacity style={styles.heroBtnPrimary} onPress={() => setHeroAccepted(true)}>
-                      <Check color="#0d9488" size={16} strokeWidth={3} />
-                      <Text style={styles.heroBtnPrimaryText}>Accept Recommendation</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.heroBtnSecondary} onPress={() => setShowOverrideModal(true)}>
-                      <Pencil color="#ffffff" size={16} />
-                      <Text style={styles.heroBtnSecondaryText}>Clinical Override</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.heroBtnGhost} onPress={() => setShowReportModal(true)}>
-                      <Text style={styles.heroBtnGhostText}>View AST Report</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-
-                {heroAccepted && (
-                  <View style={[styles.heroStatusPill, { backgroundColor: '#10b981' }]}>
-                    <CheckCheck color="#ffffff" size={16} />
-                    <Text style={styles.heroStatusPillText}>Recommendation Accepted • Protocol updated in EHR</Text>
-                  </View>
-                )}
-                {heroOverridden && (
-                  <View style={[styles.heroStatusPill, { backgroundColor: '#f59e0b' }]}>
-                    <AlertCircle color="#ffffff" size={16} />
-                    <Text style={styles.heroStatusPillText}>Clinical Override Logged • Alternative regimen active</Text>
-                  </View>
-                )}
-              </View>
-
-              {!isMobile && (
-                <View style={styles.heroVisual}>
-                  <View style={styles.heroIllustration}>
-                    <View style={styles.docBadge}>
-                      <Activity color="#0d9488" size={14} />
-                      <Text style={styles.docBadgeText}>Real-time AST</Text>
+            {/* Patients List Grid */}
+            <View style={styles.patientGrid}>
+              {patients.map(patient => (
+                <TouchableOpacity 
+                  key={patient.id} 
+                  style={styles.patientListCard} 
+                  onPress={() => router.push(`/patient/${patient.id}` as any)}
+                >
+                  <View style={[styles.patientCardHeader, { gap: 12 }]}>
+                    <View style={styles.patientCardAvatar}>
+                      <Text style={styles.patientCardAvatarText}>
+                        {patient.name.split(' ').map((n: string) => n[0]).join('')}
+                      </Text>
                     </View>
-                    <Svg width={180} height={150} viewBox="0 0 200 180" fill="none" style={styles.docSvg}>
-                      <Circle cx="110" cy="90" r="70" fill="rgba(255,255,255,0.22)" />
-                      <Rect x="30" y="140" width="140" height="8" rx="4" fill="rgba(255,255,255,0.4)" />
-                      <Rect x="50" y="105" width="80" height="42" rx="4" fill="#203a61" />
-                      <Rect x="54" y="109" width="72" height="34" rx="2" fill="#d9efff" />
-                      <Path d="M58 132 L68 126 L78 129 L88 120 L98 124 L108 116 L118 121" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" />
-                      <Path d="M142 140 L146 128 L154 128 L158 140 Z" fill="#2d6a4f" />
-                      <Circle cx="150" cy="122" r="6" fill="#52b788" />
-                      <Circle cx="144" cy="126" r="4" fill="#74c69d" />
-                      <Circle cx="156" cy="125" r="4.5" fill="#74c69d" />
-                      <Circle cx="115" cy="55" r="18" fill="#ffdfba" />
-                      <Path d="M100 52 C100 40, 130 38, 130 48 C128 44, 120 40, 112 42 Z" fill="#1e293b" />
-                      <Path d="M96 74 C96 70, 102 68, 115 68 C128 68, 134 70, 134 74 L142 120 L88 120 Z" fill="#ffffff" />
-                      <Path d="M106 72 C106 85, 124 85, 124 72" stroke="#14b8a6" strokeWidth="2.5" fill="none" />
-                      <Circle cx="115" cy="88" r="3.5" fill="#14b8a6" />
-                      <Path d="M113 70 L117 70 L116 82 L113 82 Z" fill="#3b82f6" />
-                    </Svg>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.patientName}>{patient.name}</Text>
+                      <Text style={styles.patientBed}>{patient.bed} • {patient.age}y {patient.gender}</Text>
+                    </View>
                   </View>
-                </View>
-              )}
-            </LinearGradient>
-
-            {/* Pinned Key Information */}
-            <View style={styles.pinnedSection}>
-              <View style={styles.sectionTitleRow}>
-                <View style={styles.sectionTitle}>
-                  <Pin color="#14b8a6" size={18} style={{ transform: [{ rotate: '45deg' }] }} />
-                  <Text style={styles.sectionTitleText}>Pinned Key Informations</Text>
-                </View>
-                <TouchableOpacity style={styles.addNewBtn} onPress={() => setShowAddMetricModal(true)}>
-                  <Text style={styles.addNewBtnText}>Add New</Text>
-                  <Plus color="#1e293b" size={14} />
+                  
+                  <View style={styles.patientCardBody}>
+                    <Text style={styles.patientDiag} numberOfLines={2}>{patient.primaryDiagnosis}</Text>
+                  </View>
+                  
+                  <View style={styles.patientCardFooter}>
+                    <View style={styles.amrScoreWrap}>
+                      <AlertCircle color={patient.amrRiskScore > 70 ? '#ef4444' : patient.amrRiskScore > 40 ? '#f59e0b' : '#10b981'} size={14} />
+                      <Text style={[styles.amrScoreText, { color: patient.amrRiskScore > 70 ? '#ef4444' : patient.amrRiskScore > 40 ? '#f59e0b' : '#10b981' }]}>
+                        AMR Risk: {patient.amrRiskScore}%
+                      </Text>
+                    </View>
+                    <ChevronRight color="#94a3b8" size={16} />
+                  </View>
                 </TouchableOpacity>
-              </View>
-
-              <View style={[styles.pinnedGrid, isTablet && styles.pinnedGridTablet, isMobile && styles.pinnedGridMobile]}>
-                <View style={styles.pinnedCard}>
-                  <View style={[styles.cardIconAvatar, { backgroundColor: '#fee2e2' }]}>
-                    <TrendingUp color="#ef4444" size={20} />
-                  </View>
-                  <View style={styles.pinnedInfo}>
-                    <Text style={styles.pinnedLabel}>AMR Risk Score</Text>
-                    <View style={styles.pinnedValWrap}>
-                      <Text style={styles.pinnedValue}>84%</Text>
-                      <View style={[styles.statusChip, { backgroundColor: '#fee2e2' }]}><Text style={[styles.statusChipText, { color: '#dc2626' }]}>High Risk</Text></View>
-                    </View>
-                  </View>
-                </View>
-
-                <View style={styles.pinnedCard}>
-                  <View style={[styles.cardIconAvatar, { backgroundColor: '#ffedd5' }]}>
-                    <Droplet color="#f97316" size={20} />
-                  </View>
-                  <View style={styles.pinnedInfo}>
-                    <Text style={styles.pinnedLabel}>WBC Count (10³/µL)</Text>
-                    <View style={styles.pinnedValWrap}>
-                      <Text style={styles.pinnedValue}>14.2</Text>
-                      <View style={[styles.statusChip, { backgroundColor: '#fef3c7' }]}><Text style={[styles.statusChipText, { color: '#d97706' }]}>Elevated</Text></View>
-                    </View>
-                  </View>
-                </View>
-
-                <View style={styles.pinnedCard}>
-                  <View style={[styles.cardIconAvatar, { backgroundColor: '#f3e8ff' }]}>
-                    <HeartPulse color="#a855f7" size={20} />
-                  </View>
-                  <View style={styles.pinnedInfo}>
-                    <Text style={styles.pinnedLabel}>Blood Pressure</Text>
-                    <View style={styles.pinnedValWrap}>
-                      <Text style={styles.pinnedValue}>128/84</Text>
-                      <Text style={styles.pinnedUnit}>mmHg</Text>
-                    </View>
-                  </View>
-                </View>
-
-                <View style={styles.pinnedCard}>
-                  <View style={[styles.cardIconAvatar, { backgroundColor: '#dbeafe' }]}>
-                    <Activity color="#3b82f6" size={20} />
-                  </View>
-                  <View style={styles.pinnedInfo}>
-                    <Text style={styles.pinnedLabel}>eGFR (Renal)</Text>
-                    <View style={styles.pinnedValWrap}>
-                      <Text style={styles.pinnedValue}>62</Text>
-                      <Text style={styles.pinnedUnit}>mL/min</Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            {/* Telemetry Grid (Biomarker & Fluid Compositions + Antibiotic Exposure Share) */}
-            <View style={[styles.telemetryGrid, (isTablet || isMobile) && styles.telemetryGridStacked]}>
-              {/* Telemetry Card 1: Biomarker & Fluid Compositions */}
-              <View style={styles.telemetryCard}>
-                <View style={styles.telemetryHeader}>
-                  <Text style={styles.telemetryTitle}>Biomarker & Fluid Compositions</Text>
-                  <View style={styles.headerTabGroup}>
-                    <TouchableOpacity
-                      style={[styles.chartTabBtn, telemetryTab === 'levels' && styles.chartTabBtnActive]}
-                      onPress={() => setTelemetryTab('levels')}
-                    >
-                      <Text style={[styles.chartTabBtnText, telemetryTab === 'levels' && styles.chartTabBtnTextActive]}>Live Levels</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.chartTabBtn, telemetryTab === 'trend' && styles.chartTabBtnActive]}
-                      onPress={() => setTelemetryTab('trend')}
-                    >
-                      <Text style={[styles.chartTabBtnText, telemetryTab === 'trend' && styles.chartTabBtnTextActive]}>Risk Trend</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <View style={styles.biomarkerFluidWrapper}>
-                  <View style={styles.fluidMeterItem}>
-                    <Text style={styles.meterValue}>4.2</Text>
-                    <View style={styles.meterBarTrack}>
-                      <LinearGradient colors={['#f87171', '#ef4444']} style={[styles.meterBarFill, { height: '82%' }]} />
-                    </View>
-                    <Text style={styles.meterLabel}>PCT (µg/L)</Text>
-                  </View>
-
-                  <View style={styles.fluidMeterItem}>
-                    <Text style={styles.meterValue}>3.1</Text>
-                    <View style={styles.meterBarTrack}>
-                      <LinearGradient colors={['#fbbf24', '#f59e0b']} style={[styles.meterBarFill, { height: '65%' }]} />
-                    </View>
-                    <Text style={styles.meterLabel}>Lactate</Text>
-                  </View>
-
-                  <View style={styles.fluidMeterItem}>
-                    <Text style={styles.meterValue}>1.8</Text>
-                    <View style={styles.meterBarTrack}>
-                      <LinearGradient colors={['#2dd4bf', '#14b8a6']} style={[styles.meterBarFill, { height: '45%' }]} />
-                    </View>
-                    <Text style={styles.meterLabel}>Creatinine</Text>
-                  </View>
-
-                  <View style={styles.fluidMeterItem}>
-                    <Text style={styles.meterValue}>140</Text>
-                    <View style={styles.meterBarTrack}>
-                      <LinearGradient colors={['#60a5fa', '#3b82f6']} style={[styles.meterBarFill, { height: '55%' }]} />
-                    </View>
-                    <Text style={styles.meterLabel}>Platelets</Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* Telemetry Card 2: Antibiotic Exposure Share */}
-              <View style={styles.telemetryCard}>
-                <View style={styles.telemetryHeader}>
-                  <Text style={styles.telemetryTitle}>Antibiotic Exposure Share</Text>
-                  <TouchableOpacity>
-                    <Text style={styles.viewMoreLink}>Full Log</Text>
-                  </TouchableOpacity>
-                </View>
-
-                <View style={styles.donutChartContainer}>
-                  <View style={styles.donutCanvasWrap}>
-                    <Svg width={130} height={130} viewBox="0 0 130 130" style={{ transform: [{ rotate: '-90deg' }] }}>
-                      {/* Background Ring */}
-                      <Circle cx="65" cy="65" r="48" stroke="#f1f5f9" strokeWidth="18" fill="none" />
-                      {/* Meropenem (42%) */}
-                      <Circle
-                        cx="65" cy="65" r="48"
-                        stroke="#14b8a6" strokeWidth="18"
-                        fill="none"
-                        strokeDasharray={`${2 * Math.PI * 48 * 0.42} ${2 * Math.PI * 48 * 0.58}`}
-                        strokeDashoffset="0"
-                      />
-                      {/* Ceftriaxone (28%) */}
-                      <Circle
-                        cx="65" cy="65" r="48"
-                        stroke="#3b82f6" strokeWidth="18"
-                        fill="none"
-                        strokeDasharray={`${2 * Math.PI * 48 * 0.28} ${2 * Math.PI * 48 * 0.72}`}
-                        strokeDashoffset={`${-2 * Math.PI * 48 * 0.42}`}
-                      />
-                      {/* Vancomycin (18%) */}
-                      <Circle
-                        cx="65" cy="65" r="48"
-                        stroke="#f59e0b" strokeWidth="18"
-                        fill="none"
-                        strokeDasharray={`${2 * Math.PI * 48 * 0.18} ${2 * Math.PI * 48 * 0.82}`}
-                        strokeDashoffset={`${-2 * Math.PI * 48 * 0.70}`}
-                      />
-                      {/* Others (12%) */}
-                      <Circle
-                        cx="65" cy="65" r="48"
-                        stroke="#94a3b8" strokeWidth="18"
-                        fill="none"
-                        strokeDasharray={`${2 * Math.PI * 48 * 0.12} ${2 * Math.PI * 48 * 0.88}`}
-                        strokeDashoffset={`${-2 * Math.PI * 48 * 0.88}`}
-                      />
-                    </Svg>
-                    <View style={styles.donutCenterStat}>
-                      <Text style={styles.donutNumber}>84%</Text>
-                      <Text style={styles.donutSub}>Target</Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.donutLegendGrid}>
-                    <View style={styles.legendBadge}>
-                      <View style={[styles.legendDot, { backgroundColor: '#14b8a6' }]} />
-                      <Text style={styles.legendName} numberOfLines={1}>Meropenem</Text>
-                      <Text style={styles.legendPercent}>42%</Text>
-                    </View>
-                    <View style={styles.legendBadge}>
-                      <View style={[styles.legendDot, { backgroundColor: '#3b82f6' }]} />
-                      <Text style={styles.legendName} numberOfLines={1}>Ceftriaxone</Text>
-                      <Text style={styles.legendPercent}>28%</Text>
-                    </View>
-                    <View style={styles.legendBadge}>
-                      <View style={[styles.legendDot, { backgroundColor: '#f59e0b' }]} />
-                      <Text style={styles.legendName} numberOfLines={1}>Vancomycin</Text>
-                      <Text style={styles.legendPercent}>18%</Text>
-                    </View>
-                    <View style={styles.legendBadge}>
-                      <View style={[styles.legendDot, { backgroundColor: '#94a3b8' }]} />
-                      <Text style={styles.legendName} numberOfLines={1}>Others</Text>
-                      <Text style={styles.legendPercent}>12%</Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
+              ))}
             </View>
 
             <View style={{ height: 24 }} />
           </ScrollView>
-
-          {/* 3. Right Schedule Column */}
-          <ScrollView
-            style={[styles.scheduleSidebar, isMobile && styles.scheduleSidebarMobile]}
-            contentContainerStyle={styles.scheduleSidebarContainer}
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.sidebarHeader}>
-              <Text style={styles.sidebarTitle}>Upcoming Check-ups</Text>
-              <TouchableOpacity style={styles.iconCircleBtnSmall} onPress={() => setShowScheduleModal(true)}>
-                <Plus color="#1e293b" size={18} />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.calendarCard}>
-              <View style={styles.calendarNavRow}>
-                <View style={styles.calendarMonthYear}>
-                  <Text style={styles.calMonth}>August</Text>
-                  <Text style={styles.calYear}>2026</Text>
-                </View>
-                <View style={styles.calendarArrows}>
-                  <TouchableOpacity style={styles.calArrowBtn}><ChevronLeft color="#64748b" size={14} /></TouchableOpacity>
-                  <TouchableOpacity style={styles.calArrowBtn}><ChevronRight color="#64748b" size={14} /></TouchableOpacity>
-                </View>
-              </View>
-              <View style={styles.calendarWeekdays}>
-                <Text style={styles.calWeekday}>Su</Text><Text style={styles.calWeekday}>Mo</Text><Text style={styles.calWeekday}>Tu</Text>
-                <Text style={styles.calWeekday}>We</Text><Text style={styles.calWeekday}>Th</Text><Text style={styles.calWeekday}>Fr</Text>
-                <Text style={styles.calWeekday}>Sa</Text>
-              </View>
-              <View style={styles.calendarDaysGrid}>
-                {Array.from({ length: 31 }).map((_, i) => (
-                  <TouchableOpacity key={i} style={[styles.calDayBtn, i === 13 && styles.calDayBtnActive]}>
-                    <Text style={[styles.calDayText, i === 13 && styles.calDayTextActive]}>{i + 1}</Text>
-                    {(i === 13 || i === 15) && <View style={[styles.calDayEventDot, i === 13 && styles.calDayEventDotActive]} />}
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            <View style={styles.lineupSection}>
-              <View style={styles.lineupHeader}>
-                <Text style={styles.lineupTitle}>Line up Check-ups</Text>
-                <Text style={styles.lineupDateBadge}>Today, 14 Aug</Text>
-              </View>
-              <View style={styles.lineupList}>
-                <View style={styles.lineupItem}>
-                  <View style={[styles.itemIconWrap, { backgroundColor: '#fee2e2' }]}><BellRing color="#ef4444" size={16} /></View>
-                  <View style={styles.itemInfo}>
-                    <Text style={styles.itemName}>Repeat Blood Culture & AST</Text>
-                    <Text style={styles.itemTime}>At 10:00 AM • STAT Order</Text>
-                  </View>
-                  <TouchableOpacity style={styles.itemCheckBtn}><View style={styles.checkCircle} /></TouchableOpacity>
-                </View>
-                <View style={styles.lineupItem}>
-                  <View style={[styles.itemIconWrap, { backgroundColor: '#ccfbf1' }]}><CheckSquare color="#0d9488" size={16} /></View>
-                  <View style={styles.itemInfo}>
-                    <Text style={styles.itemName}>Serum Creatinine & eGFR Check</Text>
-                    <Text style={styles.itemTime}>At 01:30 PM • Renal Watch</Text>
-                  </View>
-                  <TouchableOpacity style={styles.itemCheckBtn}><View style={styles.checkCircle} /></TouchableOpacity>
-                </View>
-                <View style={styles.lineupItem}>
-                  <View style={[styles.itemIconWrap, { backgroundColor: '#ede9fe' }]}><FileCheck color="#7c3aed" size={16} /></View>
-                  <View style={styles.itemInfo}>
-                    <Text style={styles.itemName}>ID Stewardship Team Round</Text>
-                    <Text style={styles.itemTime}>At 04:00 PM • Bedside</Text>
-                  </View>
-                  <TouchableOpacity style={styles.itemCheckBtn}><View style={styles.checkCircle} /></TouchableOpacity>
-                </View>
-                <View style={styles.lineupItem}>
-                  <View style={[styles.itemIconWrap, { backgroundColor: '#e0f2fe' }]}><FlaskConical color="#0284c7" size={16} /></View>
-                  <View style={styles.itemInfo}>
-                    <Text style={styles.itemName}>Procalcitonin Follow-up</Text>
-                    <Text style={styles.itemTime}>At 06:30 PM • Lab Check</Text>
-                  </View>
-                  <TouchableOpacity style={styles.itemCheckBtn}><View style={styles.checkCircle} /></TouchableOpacity>
-                </View>
-              </View>
-            </View>
-
-            <View style={{ height: 32 }} />
-          </ScrollView>
         </View>
       </View>
 
-      {/* Override Modal */}
-      <Modal visible={showOverrideModal} transparent animationType="fade">
+      {/* Add Record Modal */}
+      <Modal visible={showAddModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+          <View style={[styles.modalCard, { maxWidth: 500 }]}>
             <View style={styles.modalHeader}>
               <View style={styles.modalTitleWrap}>
-                <View style={[styles.modalIconBadge, { backgroundColor: '#ccfbf1' }]}><Edit3 color="#14b8a6" size={20} /></View>
+                <View style={[styles.modalIconBadge, { backgroundColor: '#ccfbf1' }]}>
+                  <Users color="#14b8a6" size={20} />
+                </View>
                 <View>
-                  <Text style={styles.modalHeaderTitle}>Clinical Override Justification</Text>
-                  <Text style={styles.modalSubtitle}>Log reason for deviating from AI Recommendation</Text>
+                  <Text style={styles.modalHeaderTitle}>Add Patient Record</Text>
+                  <Text style={styles.modalSubtitle}>Create a new clinical entry</Text>
                 </View>
               </View>
-              <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setShowOverrideModal(false)}>
-                <X color="#64748b" size={18} />
+              <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setShowAddModal(false)}>
+                <X color="#94a3b8" size={20} />
               </TouchableOpacity>
             </View>
+
             <View style={styles.modalBody}>
-              <View style={styles.modalAlertBox}>
-                <Text style={{color: '#1e293b', fontWeight: 'bold', fontSize: 13.6}}>Current AI Suggestion:</Text>
-                <Text style={{color: '#64748b', fontSize: 13.6}}>Escalate from Ceftriaxone to Meropenem (AMR Risk: 84%)</Text>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Patient Name</Text>
+                <TextInput 
+                  style={styles.formInput} 
+                  value={newPatientName}
+                  onChangeText={setNewPatientName}
+                  placeholder="e.g. John Doe"
+                  placeholderTextColor="#94a3b8"
+                />
+              </View>
+              <View style={{ flexDirection: 'row', gap: 16 }}>
+                <View style={[styles.formGroup, { flex: 1 }]}>
+                  <Text style={styles.formLabel}>Age</Text>
+                  <TextInput 
+                    style={styles.formInput} 
+                    value={newPatientAge}
+                    onChangeText={setNewPatientAge}
+                    placeholder="e.g. 45"
+                    keyboardType="numeric"
+                    placeholderTextColor="#94a3b8"
+                  />
+                </View>
+                <View style={[styles.formGroup, { flex: 1 }]}>
+                  <Text style={styles.formLabel}>Gender</Text>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <TouchableOpacity 
+                      style={[styles.genderBtn, newPatientGender === 'M' && styles.genderBtnActive]}
+                      onPress={() => setNewPatientGender('M')}
+                    >
+                      <Text style={[styles.genderBtnText, newPatientGender === 'M' && styles.genderBtnTextActive]}>M</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={[styles.genderBtn, newPatientGender === 'F' && styles.genderBtnActive]}
+                      onPress={() => setNewPatientGender('F')}
+                    >
+                      <Text style={[styles.genderBtnText, newPatientGender === 'F' && styles.genderBtnTextActive]}>F</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Clinical Reason for Override <Text style={styles.req}>*</Text></Text>
-                <TextInput style={styles.formInput} placeholder="Enter primary justification..." />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Detailed Notes & Alternative <Text style={styles.req}>*</Text></Text>
-                <TextInput style={styles.formTextarea} multiline numberOfLines={4} placeholder="Enter clinical rationale..." />
+                <Text style={styles.formLabel}>Primary Diagnosis</Text>
+                <TextInput 
+                  style={styles.formInput} 
+                  value={newPatientDiag}
+                  onChangeText={setNewPatientDiag}
+                  placeholder="e.g. Community-Acquired Pneumonia"
+                  placeholderTextColor="#94a3b8"
+                />
               </View>
             </View>
+
             <View style={styles.modalFooter}>
-              <TouchableOpacity style={styles.btnGhost} onPress={() => setShowOverrideModal(false)}><Text style={styles.btnGhostText}>Cancel</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.btnPrimaryAction} onPress={() => { setShowOverrideModal(false); setHeroOverridden(true); }}>
-                <Text style={styles.btnPrimaryActionText}>Confirm & Log Override</Text>
+              <TouchableOpacity style={styles.btnGhost} onPress={() => setShowAddModal(false)}>
+                <Text style={styles.btnGhostText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.btnPrimaryAction} onPress={handleAddPatient}>
+                <Text style={styles.btnPrimaryActionText}>Save Record</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -571,21 +301,22 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 1440,
     height: '100%',
+    flex: 1,
   },
   dashboardCard: {
     backgroundColor: '#ffffff',
     borderRadius: 32,
     flexDirection: 'row',
-    minHeight: Platform.OS === 'web' ? 'calc(100vh - 48px)' as any : '100%',
+    height: Platform.OS === 'web' ? 'calc(100vh - 48px)' as any : '100%',
     overflow: 'hidden',
     borderColor: 'rgba(255,255,255,0.8)',
     borderWidth: 1,
     ...Platform.select({
       web: {
         display: 'grid',
-        gridTemplateColumns: '84px 1fr 370px',
+        gridTemplateColumns: '84px 1fr',
         boxShadow: '0 25px 60px -15px rgba(20, 184, 166, 0.2), 0 10px 25px -5px rgba(0,0,0,0.04)',
-      },
+      } as any,
       default: {
         shadowColor: 'rgba(20, 184, 166, 0.2)',
         shadowOffset: { width: 0, height: 25 },
@@ -1551,6 +1282,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     fontFamily: 'Inter_400Regular',
   },
+  genderBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+  },
+  genderBtnActive: {
+    backgroundColor: '#14b8a6',
+    borderColor: '#14b8a6',
+  },
+  genderBtnText: {
+    fontSize: 14,
+    fontFamily: 'Inter_600SemiBold',
+    color: '#64748b',
+  },
+  genderBtnTextActive: {
+    color: '#ffffff',
+  },
   formTextarea: {
     borderWidth: 1,
     borderColor: '#e2e8f0',
@@ -1599,5 +1352,94 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 13.6,
     fontFamily: 'Inter_700Bold',
+  },
+  patientGrid: {
+    padding: 24,
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 20,
+  },
+  patientListCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 24,
+    width: Platform.OS === 'web' ? 'calc(33.33% - 14px)' as any : '100%',
+    minWidth: 280,
+    ...Platform.select({
+      web: { boxShadow: '0 10px 25px rgba(0,0,0,0.03)' },
+      default: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10 }
+    })
+  },
+
+  addPatientBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#14b8a6',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    gap: 8,
+    marginRight: 16,
+  },
+  addPatientBtnText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  patientCardAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#14b8a6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  patientCardAvatarText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontFamily: 'Inter_700Bold',
+  },
+  patientCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  patientName: {
+    fontSize: 16,
+    color: '#0f172a',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  patientBed: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+    fontFamily: 'Inter_400Regular',
+  },
+  patientCardBody: {
+    marginBottom: 16,
+  },
+  patientDiag: {
+    fontSize: 14,
+    color: '#334155',
+    lineHeight: 20,
+    fontFamily: 'Inter_400Regular',
+  },
+  patientCardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    paddingTop: 12,
+  },
+  amrScoreWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  amrScoreText: {
+    fontSize: 13,
+    fontFamily: 'Inter_600SemiBold',
   }
 });
