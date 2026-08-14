@@ -138,7 +138,7 @@ export default function LandingScreen() {
                 styles.visualImage, 
                 isTablet && styles.visualImageTablet, 
                 isMobile && styles.visualImageMobile,
-                { right: '5%', bottom: '-5%' }
+                Platform.OS === 'web' ? { mixBlendMode: 'darken' } as any : {}
               ]}
               resizeMode={"contain"}
             />
