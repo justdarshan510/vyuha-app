@@ -197,55 +197,82 @@ export default function LandingScreen() {
               </TouchableOpacity>
             </View>
             
-            {/* Stats Group */}
-            <View style={[
-              styles.heroStats, 
-              isTablet && styles.heroStatsTablet, 
-              isMobile && styles.heroStatsMobile,
-              isSmallMobile && styles.heroStatsSmallMobile
-            ]}>
-              <TouchableOpacity 
-                style={[styles.statItem, isSmallMobile && styles.statItemSmall]} 
-                activeOpacity={0.8}
-                onPress={() => setShowDemoModal(true)}
-              >
-                <View style={styles.statIcon}>
-                  <Activity color="#ffffff" size={20} />
-                </View>
-                <View style={styles.statInfo}>
-                  <Text style={styles.statValue}>0.2s</Text>
-                  <Text style={styles.statLabel}>Risk Stratification</Text>
-                </View>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.statItem, isSmallMobile && styles.statItemSmall]} 
-                activeOpacity={0.8}
-                onPress={() => setShowDemoModal(true)}
-              >
-                <View style={styles.statIcon}>
-                  <Microscope color="#ffffff" size={20} />
-                </View>
-                <View style={styles.statInfo}>
-                  <Text style={styles.statValue}>12+</Text>
-                  <Text style={styles.statLabel}>Live Biomarkers</Text>
-                </View>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.statItem, isSmallMobile && styles.statItemSmall]} 
-                activeOpacity={0.8}
-                onPress={() => setShowPortalModal(true)}
-              >
-                <View style={styles.statIcon}>
-                  <ShieldAlert color="#ffffff" size={20} />
-                </View>
-                <View style={styles.statInfo}>
-                  <Text style={styles.statValue}>100%</Text>
-                  <Text style={styles.statLabel}>Override Logging</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
+            {/* Stats Group: Desktop/Tablet vs Mobile compact 3-col card */}
+            {!isSmallMobile ? (
+              <View style={[styles.heroStats, isTablet && styles.heroStatsTablet, isMobile && styles.heroStatsMobile]}>
+                <TouchableOpacity 
+                  style={styles.statItem} 
+                  activeOpacity={0.8}
+                  onPress={() => setShowDemoModal(true)}
+                >
+                  <View style={styles.statIcon}>
+                    <Activity color="#ffffff" size={20} />
+                  </View>
+                  <View style={styles.statInfo}>
+                    <Text style={styles.statValue}>0.2s</Text>
+                    <Text style={styles.statLabel}>Risk Stratification</Text>
+                  </View>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.statItem} 
+                  activeOpacity={0.8}
+                  onPress={() => setShowDemoModal(true)}
+                >
+                  <View style={styles.statIcon}>
+                    <Microscope color="#ffffff" size={20} />
+                  </View>
+                  <View style={styles.statInfo}>
+                    <Text style={styles.statValue}>12+</Text>
+                    <Text style={styles.statLabel}>Live Biomarkers</Text>
+                  </View>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.statItem} 
+                  activeOpacity={0.8}
+                  onPress={() => setShowPortalModal(true)}
+                >
+                  <View style={styles.statIcon}>
+                    <ShieldAlert color="#ffffff" size={20} />
+                  </View>
+                  <View style={styles.statInfo}>
+                    <Text style={styles.statValue}>100%</Text>
+                    <Text style={styles.statLabel}>Override Logging</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.statsCardCompactMobile}>
+                <TouchableOpacity style={styles.statColMobile} onPress={() => setShowDemoModal(true)}>
+                  <View style={styles.statIconMini}>
+                    <Activity color="#0d9488" size={16} />
+                  </View>
+                  <Text style={styles.statValueCompact}>0.2s</Text>
+                  <Text style={styles.statLabelCompact}>Stratification</Text>
+                </TouchableOpacity>
+
+                <View style={styles.statColDivider} />
+
+                <TouchableOpacity style={styles.statColMobile} onPress={() => setShowDemoModal(true)}>
+                  <View style={styles.statIconMini}>
+                    <Microscope color="#0d9488" size={16} />
+                  </View>
+                  <Text style={styles.statValueCompact}>12+</Text>
+                  <Text style={styles.statLabelCompact}>Biomarkers</Text>
+                </TouchableOpacity>
+
+                <View style={styles.statColDivider} />
+
+                <TouchableOpacity style={styles.statColMobile} onPress={() => setShowPortalModal(true)}>
+                  <View style={styles.statIconMini}>
+                    <ShieldAlert color="#0d9488" size={16} />
+                  </View>
+                  <Text style={styles.statValueCompact}>100%</Text>
+                  <Text style={styles.statLabelCompact}>Overrides</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
           
           {/* Right Visuals */}
@@ -253,23 +280,10 @@ export default function LandingScreen() {
             <View style={[
               styles.visualShape, 
               isMobile && styles.visualShapeMobile,
-              Platform.OS === 'web' 
-                ? { 
-                    clipPath: isMobile 
-                      ? 'polygon(0% 12%, 100% 0%, 100% 100%, 0% 100%)' 
-                      : 'polygon(45% 0%, 100% 0%, 100% 100%, 0% 100%)' 
-                  } as any
+              Platform.OS === 'web' && !isMobile
+                ? { clipPath: 'polygon(45% 0%, 100% 0%, 100% 100%, 0% 100%)' } as any
                 : {}
             ]}>
-              {/* Fallback for Native if clipPath is missing */}
-              {Platform.OS !== 'web' && (
-                <View style={StyleSheet.absoluteFill}>
-                  <Svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100">
-                    <Polygon points={isMobile ? "0,12 100,0 100,100 0,100" : "45,0 100,0 100,100 0,100"} fill="#65dfd2" />
-                  </Svg>
-                </View>
-              )}
-
               {/* Background circles on the teal shape */}
               <View style={[styles.shapeCircle, styles.shapeCircle1, isMobile && styles.shapeCircle1Mobile]} />
               <View style={[styles.shapeCircle, styles.shapeCircle2, isMobile && styles.shapeCircle2Mobile]} />
@@ -827,14 +841,14 @@ const styles = StyleSheet.create({
   },
   heroVisualMobile: {
     width: '100%',
-    minHeight: 320,
-    height: 360,
-    justifyContent: 'center',
+    height: 340,
+    justifyContent: 'flex-end',
     alignItems: 'center',
     position: 'relative',
     overflow: 'hidden',
     borderRadius: 24,
-    marginTop: 8,
+    marginTop: 16,
+    marginBottom: 10,
   },
   visualShape: {
     position: 'absolute',
@@ -847,6 +861,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   visualShapeMobile: {
+    position: 'absolute',
     top: 0,
     bottom: 0,
     left: 0,
@@ -912,15 +927,66 @@ const styles = StyleSheet.create({
     right: 20,
   },
   visualImageMobile: {
-    position: 'relative',
-    width: '100%',
-    height: 330,
+    position: 'absolute',
+    bottom: 0,
+    width: '90%',
+    height: '95%',
+    maxHeight: 330,
     zIndex: 2,
     pointerEvents: 'none',
     alignSelf: 'center',
   },
   visualImageSmallMobile: {
-    height: 280,
+    height: '95%',
+    maxHeight: 310,
+  },
+  // Compact 3-Column Mobile Stats Card
+  statsCardCompactMobile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    width: '100%',
+    marginBottom: 8,
+    ...Platform.select({
+      web: { boxShadow: '0 4px 14px rgba(0,0,0,0.06)' },
+      default: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+    }),
+  },
+  statColMobile: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statIconMini: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#ccfbf1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  statValueCompact: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0f172a',
+  },
+  statLabelCompact: {
+    fontSize: 10.5,
+    fontWeight: '600',
+    color: '#64748b',
+    marginTop: 2,
+  },
+  statColDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: '#e2e8f0',
   },
   liveStatusPill: {
     flexDirection: 'row',
