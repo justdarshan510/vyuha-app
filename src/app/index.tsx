@@ -290,34 +290,6 @@ export default function LandingScreen() {
                 <View style={[styles.shapeCircle, styles.shapeCircle3]} />
               </View>
 
-              {/* Reactive Floating Telemetry Card 1 */}
-              <Animated.View style={[
-                styles.telemetryCardTop,
-                { transform: [{ translateY: floatAnim1 }] }
-              ]}>
-                <View style={styles.telemetryDotWrap}>
-                  <View style={styles.pulseDotRed} />
-                </View>
-                <View>
-                  <Text style={styles.telemetryTag}>AMR Risk Index</Text>
-                  <Text style={styles.telemetryTitle}>84% • Critical Escalation</Text>
-                </View>
-              </Animated.View>
-
-              {/* Reactive Floating Telemetry Card 2 */}
-              <Animated.View style={[
-                styles.telemetryCardBottom,
-                { transform: [{ translateY: floatAnim2 }] }
-              ]}>
-                <View style={styles.telemetryIconWrap}>
-                  <Zap color="#0d9488" size={16} />
-                </View>
-                <View>
-                  <Text style={styles.telemetryTag}>Real-time AST Inference</Text>
-                  <Text style={styles.telemetryTitle}>Meropenem Active (0.2s)</Text>
-                </View>
-              </Animated.View>
-
               <Image 
                 source={require('../../assets/images/doctor_female_transparent_cropped.png')}
                 style={[
