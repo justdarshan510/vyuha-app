@@ -322,12 +322,9 @@ export default function DashboardScreen() {
               <View style={styles.sectionTitleRow}>
                 <View style={styles.sectionTitle}>
                   <Pin color="#14b8a6" size={18} style={{ transform: [{ rotate: '45deg' }] }} />
-                  <Text style={styles.sectionTitleText}>Pinned Key Informations</Text>
+                  <Text style={styles.sectionTitleText}>Key clinical signals</Text>
                 </View>
-                <TouchableOpacity style={styles.addNewBtn} onPress={() => setShowAddMetricModal(true)}>
-                  <Text style={styles.addNewBtnText}>Add New</Text>
-                  <Plus color="#1e293b" size={14} />
-                </TouchableOpacity>
+                <Text style={styles.sectionMetaText}>{focusPatient.ward} • {focusPatient.ehrId}</Text>
               </View>
 
               <View style={[styles.pinnedGrid, isTablet && styles.pinnedGridTablet, isMobile && styles.pinnedGridMobile]}>
@@ -336,10 +333,14 @@ export default function DashboardScreen() {
                     <TrendingUp color="#ef4444" size={20} />
                   </View>
                   <View style={styles.pinnedInfo}>
-                    <Text style={styles.pinnedLabel}>AMR Risk Score</Text>
+                    <Text style={styles.pinnedLabel}>AMR Risk Index</Text>
                     <View style={styles.pinnedValWrap}>
-                      <Text style={styles.pinnedValue}>84%</Text>
-                      <View style={[styles.statusChip, { backgroundColor: '#fee2e2' }]}><Text style={[styles.statusChipText, { color: '#dc2626' }]}>High Risk</Text></View>
+                      <Text style={styles.pinnedValue}>{focusPatient.risk.score}%</Text>
+                      <View style={[styles.statusChip, { backgroundColor: RISK_BAND_META[focusPatient.risk.band].bg }]}>
+                        <Text style={[styles.statusChipText, { color: RISK_BAND_META[focusPatient.risk.band].color }]}>
+                          {RISK_BAND_META[focusPatient.risk.band].label}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </View>
@@ -386,7 +387,10 @@ export default function DashboardScreen() {
             </View>
 
             {/* Telemetry Grid (Biomarker & Fluid Compositions + Antibiotic Exposure Share) */}
-            <View style={[styles.telemetryGrid, (isTablet || isMobile) && styles.telemetryGridStacked]}>
+            <View
+              style={[styles.telemetryGrid, (isTablet || isMobile) && styles.telemetryGridStacked]}
+              onLayout={(e) => { telemetryYRef.current = e.nativeEvent.layout.y; }}
+            >
               {/* Telemetry Card 1: Biomarker & Fluid Compositions */}
               <View style={styles.telemetryCard}>
                 <View style={styles.telemetryHeader}>
@@ -407,6 +411,33 @@ export default function DashboardScreen() {
                   </View>
                 </View>
 
+                {telemetryTab === 'trend' ? (
+                  <View style={styles.trendWrapper}>
+                    <Svg width="100%" height={150} viewBox="0 0 300 150">
+                      <Path d="M0 130 L300 130" stroke="#e2e8f0" strokeWidth="1" />
+                      <Path d="M0 88 L300 88" stroke="#f1f5f9" strokeWidth="1" />
+                      <Path d="M0 46 L300 46" stroke="#f1f5f9" strokeWidth="1" />
+                      <Path
+                        d="M10 108 L68 96 L126 74 L184 58 L242 38 L290 24"
+                        stroke="#14b8a6"
+                        strokeWidth="3"
+                        fill="none"
+                        strokeLinecap="round"
+                      />
+                      {[[10, 108], [68, 96], [126, 74], [184, 58], [242, 38], [290, 24]].map(([cx, cy]) => (
+                        <Circle key={`${cx}`} cx={cx} cy={cy} r="4" fill="#ffffff" stroke="#14b8a6" strokeWidth="3" />
+                      ))}
+                    </Svg>
+                    <View style={styles.trendAxis}>
+                      {['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Today'].map((d) => (
+                        <Text key={d} style={styles.trendAxisLabel}>{d}</Text>
+                      ))}
+                    </View>
+                    <Text style={styles.trendCaption}>
+                      Predicted resistance risk climbed from 41% to {focusPatient.risk.score}% over six days.
+                    </Text>
+                  </View>
+                ) : (
                 <View style={styles.biomarkerFluidWrapper}>
                   <View style={styles.fluidMeterItem}>
                     <Text style={styles.meterValue}>4.2</Text>
@@ -440,14 +471,15 @@ export default function DashboardScreen() {
                     <Text style={styles.meterLabel}>Platelets</Text>
                   </View>
                 </View>
+                )}
               </View>
 
               {/* Telemetry Card 2: Antibiotic Exposure Share */}
               <View style={styles.telemetryCard}>
                 <View style={styles.telemetryHeader}>
                   <Text style={styles.telemetryTitle}>Antibiotic Exposure Share</Text>
-                  <TouchableOpacity>
-                    <Text style={styles.viewMoreLink}>Full Log</Text>
+                  <TouchableOpacity onPress={() => setShowReportModal(true)}>
+                    <Text style={styles.viewMoreLink}>AST Report</Text>
                   </TouchableOpacity>
                 </View>
 
@@ -531,21 +563,33 @@ export default function DashboardScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.sidebarHeader}>
-              <Text style={styles.sidebarTitle}>Upcoming Check-ups</Text>
-              <TouchableOpacity style={styles.iconCircleBtnSmall} onPress={() => setShowScheduleModal(true)}>
-                <Plus color="#1e293b" size={18} />
-              </TouchableOpacity>
+              <Text style={styles.sidebarTitle}>Care plan</Text>
+              <Text style={styles.sidebarCount}>
+                {doneTasks.length}/{CARE_TASKS.length} done
+              </Text>
             </View>
 
             <View style={styles.calendarCard}>
               <View style={styles.calendarNavRow}>
                 <View style={styles.calendarMonthYear}>
-                  <Text style={styles.calMonth}>August</Text>
+                  <Text style={styles.calMonth}>{MONTHS[monthIndex]}</Text>
                   <Text style={styles.calYear}>2026</Text>
                 </View>
                 <View style={styles.calendarArrows}>
-                  <TouchableOpacity style={styles.calArrowBtn}><ChevronLeft color="#64748b" size={14} /></TouchableOpacity>
-                  <TouchableOpacity style={styles.calArrowBtn}><ChevronRight color="#64748b" size={14} /></TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.calArrowBtn}
+                    onPress={() => setMonthIndex((m) => (m === 0 ? 11 : m - 1))}
+                    accessibilityLabel="Previous month"
+                  >
+                    <ChevronLeft color="#64748b" size={14} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.calArrowBtn}
+                    onPress={() => setMonthIndex((m) => (m === 11 ? 0 : m + 1))}
+                    accessibilityLabel="Next month"
+                  >
+                    <ChevronRight color="#64748b" size={14} />
+                  </TouchableOpacity>
                 </View>
               </View>
               <View style={styles.calendarWeekdays}>
@@ -554,53 +598,54 @@ export default function DashboardScreen() {
                 <Text style={styles.calWeekday}>Sa</Text>
               </View>
               <View style={styles.calendarDaysGrid}>
-                {Array.from({ length: 31 }).map((_, i) => (
-                  <TouchableOpacity key={i} style={[styles.calDayBtn, i === 13 && styles.calDayBtnActive]}>
-                    <Text style={[styles.calDayText, i === 13 && styles.calDayTextActive]}>{i + 1}</Text>
-                    {(i === 13 || i === 15) && <View style={[styles.calDayEventDot, i === 13 && styles.calDayEventDotActive]} />}
-                  </TouchableOpacity>
-                ))}
+                {Array.from({ length: daysInMonth }).map((_, i) => {
+                  const day = i + 1;
+                  const isActive = day === selectedDay;
+                  const hasEvent = day === 14 || day === 16;
+                  return (
+                    <TouchableOpacity
+                      key={day}
+                      style={[styles.calDayBtn, isActive && styles.calDayBtnActive]}
+                      onPress={() => setSelectedDay(day)}
+                      accessibilityLabel={`${MONTHS[monthIndex]} ${day}`}
+                    >
+                      <Text style={[styles.calDayText, isActive && styles.calDayTextActive]}>{day}</Text>
+                      {hasEvent && <View style={[styles.calDayEventDot, isActive && styles.calDayEventDotActive]} />}
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
 
             <View style={styles.lineupSection}>
               <View style={styles.lineupHeader}>
-                <Text style={styles.lineupTitle}>Line up Check-ups</Text>
-                <Text style={styles.lineupDateBadge}>Today, 14 Aug</Text>
+                <Text style={styles.lineupTitle}>Orders &amp; follow-ups</Text>
+                <Text style={styles.lineupDateBadge}>{selectedDay} {MONTHS[monthIndex].slice(0, 3)}</Text>
               </View>
               <View style={styles.lineupList}>
-                <View style={styles.lineupItem}>
-                  <View style={[styles.itemIconWrap, { backgroundColor: '#fee2e2' }]}><BellRing color="#ef4444" size={16} /></View>
-                  <View style={styles.itemInfo}>
-                    <Text style={styles.itemName}>Repeat Blood Culture & AST</Text>
-                    <Text style={styles.itemTime}>At 10:00 AM • STAT Order</Text>
-                  </View>
-                  <TouchableOpacity style={styles.itemCheckBtn}><View style={styles.checkCircle} /></TouchableOpacity>
-                </View>
-                <View style={styles.lineupItem}>
-                  <View style={[styles.itemIconWrap, { backgroundColor: '#ccfbf1' }]}><CheckSquare color="#0d9488" size={16} /></View>
-                  <View style={styles.itemInfo}>
-                    <Text style={styles.itemName}>Serum Creatinine & eGFR Check</Text>
-                    <Text style={styles.itemTime}>At 01:30 PM • Renal Watch</Text>
-                  </View>
-                  <TouchableOpacity style={styles.itemCheckBtn}><View style={styles.checkCircle} /></TouchableOpacity>
-                </View>
-                <View style={styles.lineupItem}>
-                  <View style={[styles.itemIconWrap, { backgroundColor: '#ede9fe' }]}><FileCheck color="#7c3aed" size={16} /></View>
-                  <View style={styles.itemInfo}>
-                    <Text style={styles.itemName}>ID Stewardship Team Round</Text>
-                    <Text style={styles.itemTime}>At 04:00 PM • Bedside</Text>
-                  </View>
-                  <TouchableOpacity style={styles.itemCheckBtn}><View style={styles.checkCircle} /></TouchableOpacity>
-                </View>
-                <View style={styles.lineupItem}>
-                  <View style={[styles.itemIconWrap, { backgroundColor: '#e0f2fe' }]}><FlaskConical color="#0284c7" size={16} /></View>
-                  <View style={styles.itemInfo}>
-                    <Text style={styles.itemName}>Procalcitonin Follow-up</Text>
-                    <Text style={styles.itemTime}>At 06:30 PM • Lab Check</Text>
-                  </View>
-                  <TouchableOpacity style={styles.itemCheckBtn}><View style={styles.checkCircle} /></TouchableOpacity>
-                </View>
+                {CARE_TASKS.map((task) => {
+                  const done = doneTasks.includes(task.id);
+                  return (
+                    <View key={task.id} style={styles.lineupItem}>
+                      <View style={[styles.itemIconWrap, { backgroundColor: task.tone }]}>
+                        <task.Icon color={task.color} size={16} />
+                      </View>
+                      <View style={styles.itemInfo}>
+                        <Text style={[styles.itemName, done && styles.itemNameDone]}>{task.title}</Text>
+                        <Text style={styles.itemTime}>{task.meta}</Text>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.itemCheckBtn}
+                        onPress={() => toggleTask(task.id)}
+                        accessibilityLabel={done ? `Mark ${task.title} pending` : `Mark ${task.title} done`}
+                      >
+                        <View style={[styles.checkCircle, done && styles.checkCircleDone]}>
+                          {done && <Check color="#ffffff" size={12} strokeWidth={3} />}
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
               </View>
             </View>
 
@@ -627,22 +672,45 @@ export default function DashboardScreen() {
             </View>
             <View style={styles.modalBody}>
               <View style={styles.modalAlertBox}>
-                <Text style={{color: '#1e293b', fontWeight: 'bold', fontSize: 13.6}}>Current AI Suggestion:</Text>
-                <Text style={{color: '#64748b', fontSize: 13.6}}>Escalate from Ceftriaxone to Meropenem (AMR Risk: 84%)</Text>
+                <Text style={{color: '#1e293b', fontFamily: 'Inter_700Bold', fontSize: 13.6}}>Model recommendation</Text>
+                <Text style={{color: '#64748b', fontSize: 13.6}}>
+                  Escalate from Ceftriaxone to Meropenem — predicted resistance {focusPatient.risk.score}%
+                </Text>
               </View>
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Clinical Reason for Override <Text style={styles.req}>*</Text></Text>
-                <TextInput style={styles.formInput} placeholder="Enter primary justification..." />
+                <Text style={styles.formLabel}>Clinical reason for override <Text style={styles.req}>*</Text></Text>
+                <TextInput
+                  style={styles.formInput}
+                  placeholder="e.g. Carbapenem-sparing stewardship policy"
+                  placeholderTextColor="#94a3b8"
+                  value={overrideReason}
+                  onChangeText={setOverrideReason}
+                />
               </View>
               <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Detailed Notes & Alternative <Text style={styles.req}>*</Text></Text>
-                <TextInput style={styles.formTextarea} multiline numberOfLines={4} placeholder="Enter clinical rationale..." />
+                <Text style={styles.formLabel}>Alternative plan &amp; notes <Text style={styles.req}>*</Text></Text>
+                <TextInput
+                  style={styles.formTextarea}
+                  multiline
+                  numberOfLines={4}
+                  placeholder="Document the regimen you are choosing instead and why."
+                  placeholderTextColor="#94a3b8"
+                  value={overrideNotes}
+                  onChangeText={setOverrideNotes}
+                />
               </View>
+              <Text style={styles.modalHint}>
+                Overrides are logged with your clinician ID and feed back into model calibration.
+              </Text>
             </View>
             <View style={styles.modalFooter}>
               <TouchableOpacity style={styles.btnGhost} onPress={() => setShowOverrideModal(false)}><Text style={styles.btnGhostText}>Cancel</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.btnPrimaryAction} onPress={() => { setShowOverrideModal(false); setHeroOverridden(true); }}>
-                <Text style={styles.btnPrimaryActionText}>Confirm & Log Override</Text>
+              <TouchableOpacity
+                style={[styles.btnPrimaryAction, (!overrideReason.trim() || !overrideNotes.trim()) && styles.btnDisabled]}
+                disabled={!overrideReason.trim() || !overrideNotes.trim()}
+                onPress={confirmOverride}
+              >
+                <Text style={styles.btnPrimaryActionText}>Confirm &amp; log override</Text>
               </TouchableOpacity>
             </View>
           </View>
