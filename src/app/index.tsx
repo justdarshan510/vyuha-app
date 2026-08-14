@@ -9,144 +9,227 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import { Play, Building2, Users, ClipboardCheck } from 'lucide-react-native';
-import { Link } from 'expo-router';
+import {
+  Stethoscope,
+  ClipboardList,
+  ArrowRight,
+  Brain,
+  MessageSquareQuote,
+  Activity,
+  RefreshCw,
+  User,
+  ShieldAlert,
+  FileSearch,
+  ClipboardCheck,
+} from 'lucide-react-native';
+import { router } from 'expo-router';
 import Svg, { Polygon } from 'react-native-svg';
 
+const PILLARS = [
+  {
+    Icon: Brain,
+    title: 'Predict',
+    body: 'Scores each patient’s antimicrobial resistance risk from history, cultures and prior exposure.',
+  },
+  {
+    Icon: MessageSquareQuote,
+    title: 'Explain',
+    body: 'Shows the drivers behind every score, so the reasoning is auditable — never a black box.',
+  },
+  {
+    Icon: Activity,
+    title: 'Act',
+    body: 'Recommends an escalation or de-escalation the clinician can accept or override on the spot.',
+  },
+  {
+    Icon: RefreshCw,
+    title: 'Learn',
+    body: 'Feeds each decision and outcome back in, so the model sharpens against local resistance.',
+  },
+];
+
+const FLOW = [
+  { Icon: User, label: 'Patient', caption: 'Staff prepare the record' },
+  { Icon: ShieldAlert, label: 'Risk', caption: 'Engine scores AMR risk' },
+  { Icon: FileSearch, label: 'Explanation', caption: 'Drivers made visible' },
+  { Icon: ClipboardCheck, label: 'Clinical Decision', caption: 'Doctor decides' },
+];
+
 export default function LandingScreen() {
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const isTablet = width <= 1200;
   const isMobile = width <= 992;
 
   return (
     <View style={styles.container}>
-      {/* Background Decorations */}
       <View style={[styles.bgCircle, styles.bgCircle1]} />
       <View style={[styles.bgCircle, styles.bgCircle2]} />
-      <View style={[styles.bgCircle, styles.bgCircle3]} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Navigation */}
         <View style={[styles.navbar, isMobile && styles.navbarMobile]}>
-          <Link href="/" asChild>
-            <TouchableOpacity style={styles.navBrand}>
-              <Image 
-                source={require('../../assets/images/logo.png')} 
-                style={styles.logoImg}
-                resizeMode="contain" 
-              />
-            </TouchableOpacity>
-          </Link>
-          
-          {!isMobile && (
-            <View style={styles.navLinks}>
-              <TouchableOpacity><Text style={styles.navLink}>Features</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.navLink}>Integrations</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.navLink}>Security</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.navLink}>API</Text></TouchableOpacity>
-              <TouchableOpacity><Text style={styles.navLink}>About</Text></TouchableOpacity>
-            </View>
-          )}
+          <TouchableOpacity style={styles.navBrand} onPress={() => router.push('/')}>
+            <Image
+              source={require('../../assets/images/logo.png')}
+              style={[styles.logoImg, isMobile && styles.logoImgMobile]}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
 
-          <View style={styles.navActions}>
-            <Link href="/auth" asChild>
-              <TouchableOpacity style={styles.btnLogin}>
-                <Text style={styles.btnLoginText}>Login / Sign Up</Text>
-              </TouchableOpacity>
-            </Link>
-          </View>
+          <TouchableOpacity style={styles.btnLogin} onPress={() => router.push('/login')}>
+            <Text style={styles.btnLoginText}>Sign in</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Hero Section */}
+        {/* Hero */}
         <View style={[styles.hero, isMobile && styles.heroMobile]}>
-          
-          {/* Left Content */}
           <View style={[styles.heroContent, isMobile && styles.heroContentMobile]}>
-            <Text style={[styles.heroTitle, isTablet && styles.heroTitleTablet]}>
-              Empowering Clinical Decisions with Precision
+            <View style={styles.eyebrow}>
+              <View style={styles.eyebrowDot} />
+              <Text style={styles.eyebrowText}>Antimicrobial resistance intelligence</Text>
+            </View>
+
+            <Text
+              style={[
+                styles.heroTitle,
+                isTablet && styles.heroTitleTablet,
+                isMobile && styles.heroTitleMobile,
+              ]}
+            >
+              Predict earlier. Treat smarter. Protect patients.
             </Text>
-            <Text style={styles.heroSubtitle}>
-              Advanced, real-time insights for healthcare professionals to provide exceptional, data-driven patient care.
+
+            <Text style={[styles.heroSubtitle, isMobile && styles.heroSubtitleMobile]}>
+              AMR-GUARD reads a patient’s history the moment they are registered, flags the risk that
+              the usual antibiotic will fail, and explains why — so the clinician decides with the
+              evidence already in front of them.
             </Text>
-            
-            <View style={[styles.heroButtons, isMobile && styles.heroButtonsMobile]}>
-              <Link href="/auth" asChild>
-                <TouchableOpacity style={styles.btnPrimary}>
-                  <Text style={styles.btnPrimaryText}>Get Started</Text>
-                </TouchableOpacity>
-              </Link>
-              <TouchableOpacity style={styles.btnSecondary}>
-                <View style={styles.iconWrapper}>
-                  <Play color="#65dfd2" size={18} fill="#65dfd2" />
+
+            <View style={[styles.portalRow, isMobile && styles.portalRowMobile]}>
+              <TouchableOpacity
+                style={styles.portalCardPrimary}
+                onPress={() => router.push('/login/staff')}
+                accessibilityRole="button"
+              >
+                <View style={styles.portalIconLight}>
+                  <ClipboardList color="#0f766e" size={20} strokeWidth={2.3} />
                 </View>
-                <Text style={styles.btnSecondaryText}>Request Demo</Text>
+                <View style={styles.portalCopy}>
+                  <Text style={styles.portalTitleLight}>Staff Portal</Text>
+                  <Text style={styles.portalSubLight}>Register, search and schedule patients</Text>
+                </View>
+                <ArrowRight color="#ffffff" size={18} strokeWidth={2.4} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.portalCard}
+                onPress={() => router.push('/login/doctor')}
+                accessibilityRole="button"
+              >
+                <View style={styles.portalIcon}>
+                  <Stethoscope color="#0f766e" size={20} strokeWidth={2.3} />
+                </View>
+                <View style={styles.portalCopy}>
+                  <Text style={styles.portalTitle}>Doctor Portal</Text>
+                  <Text style={styles.portalSub}>Review AMR risk and decide treatment</Text>
+                </View>
+                <ArrowRight color="#0f766e" size={18} strokeWidth={2.4} />
               </TouchableOpacity>
             </View>
-            
-            <View style={[styles.heroStats, isTablet && styles.heroStatsTablet, isMobile && styles.heroStatsMobile]}>
-              <View style={styles.statItem}>
-                <View style={styles.statIcon}>
-                  <Building2 color="#ffffff" size={22} />
-                </View>
-                <View style={styles.statInfo}>
-                  <Text style={styles.statValue}>50+</Text>
-                  <Text style={styles.statLabel}>Integrations</Text>
-                </View>
-              </View>
-              
-              <View style={styles.statItem}>
-                <View style={styles.statIcon}>
-                  <Users color="#ffffff" size={22} />
-                </View>
-                <View style={styles.statInfo}>
-                  <Text style={styles.statValue}>2K+</Text>
-                  <Text style={styles.statLabel}>Providers</Text>
-                </View>
-              </View>
-              
-              <View style={styles.statItem}>
-                <View style={styles.statIcon}>
-                  <ClipboardCheck color="#ffffff" size={22} />
-                </View>
-                <View style={styles.statInfo}>
-                  <Text style={styles.statValue}>99%</Text>
-                  <Text style={styles.statLabel}>Accuracy</Text>
-                </View>
-              </View>
-            </View>
           </View>
-          
-          {/* Right Visuals */}
+
+          {/* Visual */}
           <View style={[styles.heroVisual, isMobile && styles.heroVisualMobile]}>
-            <View style={[
-              styles.visualShape, 
-              isMobile ? styles.visualShapeMobile : null,
-              Platform.OS === 'web' 
-                ? { clipPath: isMobile ? 'polygon(0 15%, 100% 0, 100% 100%, 0 100%)' : 'polygon(18% 0, 100% 0, 100% 100%, 0% 100%)' } as any
-                : {}
-            ]}>
-              {/* Fallback for Native if clipPath is missing: absolute SVG to cover the clipped area */}
+            <View
+              style={[
+                styles.visualShape,
+                isMobile ? styles.visualShapeMobile : null,
+                Platform.OS === 'web'
+                  ? ({
+                      clipPath: isMobile
+                        ? 'polygon(0 15%, 100% 0, 100% 100%, 0 100%)'
+                        : 'polygon(18% 0, 100% 0, 100% 100%, 0% 100%)',
+                    } as any)
+                  : {},
+              ]}
+            >
               {Platform.OS !== 'web' && (
                 <View style={StyleSheet.absoluteFill}>
                   <Svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100">
-                    <Polygon points={isMobile ? "0,15 100,0 100,100 0,100" : "18,0 100,0 100,100 0,100"} fill="#65dfd2" />
+                    <Polygon
+                      points={isMobile ? '0,15 100,0 100,100 0,100' : '18,0 100,0 100,100 0,100'}
+                      fill="#65dfd2"
+                    />
                   </Svg>
                 </View>
               )}
-
-              {/* Background circles on the teal shape */}
               <View style={[styles.shapeCircle, styles.shapeCircle1]} />
               <View style={[styles.shapeCircle, styles.shapeCircle2]} />
-              <View style={[styles.shapeCircle, styles.shapeCircle3]} />
             </View>
 
-            <Image 
+            <Image
               source={require('../../assets/images/doctor_female_transparent_cropped.png')}
-              style={[styles.visualImage, isTablet && styles.visualImageTablet, isMobile && styles.visualImageMobile]}
-              resizeMode={isMobile ? "cover" : "contain"}
+              style={[
+                styles.visualImage,
+                isTablet && styles.visualImageTablet,
+                isMobile && styles.visualImageMobile,
+              ]}
+              resizeMode={isMobile ? 'cover' : 'contain'}
+              accessibilityLabel="Clinician reviewing patient data"
             />
           </View>
+        </View>
 
+        {/* Pillars */}
+        <View style={[styles.section, isMobile && styles.sectionMobile]}>
+          <Text style={styles.sectionKicker}>Predict • Explain • Act • Learn</Text>
+          <View style={styles.pillarGrid}>
+            {PILLARS.map(({ Icon, title, body }) => (
+              <View key={title} style={styles.pillarCard}>
+                <View style={styles.pillarIcon}>
+                  <Icon color="#0d9488" size={19} strokeWidth={2.3} />
+                </View>
+                <Text style={styles.pillarTitle}>{title}</Text>
+                <Text style={styles.pillarBody}>{body}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Flow */}
+        <View style={[styles.section, styles.flowSection, isMobile && styles.sectionMobile]}>
+          <Text style={styles.flowHeading}>How a case moves through AMR-GUARD</Text>
+          <View style={[styles.flowRow, isMobile && styles.flowRowMobile]}>
+            {FLOW.map(({ Icon, label, caption }, index) => (
+              <React.Fragment key={label}>
+                <View style={styles.flowStep}>
+                  <View style={styles.flowIcon}>
+                    <Icon color="#0f766e" size={20} strokeWidth={2.3} />
+                  </View>
+                  <Text style={styles.flowLabel}>{label}</Text>
+                  <Text style={styles.flowCaption}>{caption}</Text>
+                </View>
+                {index < FLOW.length - 1 && (
+                  <View style={[styles.flowArrow, isMobile && styles.flowArrowMobile]}>
+                    <ArrowRight
+                      color="#5eead4"
+                      size={18}
+                      strokeWidth={2.6}
+                      style={isMobile ? ({ transform: [{ rotate: '90deg' }] } as any) : undefined}
+                    />
+                  </View>
+                )}
+              </React.Fragment>
+            ))}
+          </View>
+          <Text style={styles.flowFootnote}>
+            The model recommends and explains. The clinician remains the decision-maker, and every
+            accept or override is logged back into the system.
+          </Text>
+        </View>
+
+        <View style={[styles.footer, isMobile && styles.footerMobile]}>
+          <Text style={styles.footerText}>AMR-GUARD • Clinical decision support prototype</Text>
         </View>
       </ScrollView>
     </View>
@@ -177,192 +260,222 @@ const styles = StyleSheet.create({
   bgCircle2: {
     width: 400,
     height: 400,
-    bottom: -100,
-    left: -150,
-  },
-  bgCircle3: {
-    width: 150,
-    height: 150,
-    bottom: 50,
-    right: '40%',
+    top: 420,
+    left: -170,
   },
   navbar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 60,
-    paddingVertical: 24,
+    paddingVertical: 18,
     zIndex: 10,
   },
   navbarMobile: {
     paddingHorizontal: 20,
+    paddingVertical: 12,
   },
   navBrand: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   logoImg: {
-    height: 140,
-    width: 280, // Approximate width for logo aspect ratio
+    height: 120,
+    width: 240,
   },
-  navLinks: {
-    flexDirection: 'row',
-    gap: 32,
-    marginLeft: 'auto',
-    marginRight: 40,
-  },
-  navLink: {
-    color: '#6b7280',
-    fontSize: 15.2, // 0.95rem
-    fontWeight: '500',
-  },
-  navActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  logoImgMobile: {
+    height: 78,
+    width: 156,
   },
   btnLogin: {
-    backgroundColor: '#65dfd2',
+    backgroundColor: '#14b8a6',
     paddingVertical: 10,
-    paddingHorizontal: 24,
+    paddingHorizontal: 22,
     borderRadius: 99,
     ...Platform.select({
-      web: { boxShadow: '0 4px 12px rgba(79, 209, 197, 0.3)' },
-      default: { shadowColor: 'rgba(79,209,197,0.3)', shadowOffset: {width:0, height:4}, shadowOpacity: 1, shadowRadius: 12 }
-    })
+      web: { boxShadow: '0 4px 12px rgba(20, 184, 166, 0.28)' },
+      default: {
+        shadowColor: 'rgba(20,184,166,0.28)',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 1,
+        shadowRadius: 12,
+      },
+    }),
   },
   btnLoginText: {
-    color: 'white',
-    fontSize: 15.2,
-    fontWeight: '600',
+    color: '#ffffff',
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14.5,
   },
   hero: {
     flexDirection: 'row',
-    flex: 1,
-    minHeight: Platform.OS === 'web' ? 'calc(100vh - 128px)' : 600,
     paddingLeft: 80,
     alignItems: 'center',
     position: 'relative',
+    minHeight: 560,
   },
   heroMobile: {
     flexDirection: 'column',
-    paddingLeft: 40,
-    paddingRight: 40,
-    paddingTop: 40,
-    paddingBottom: 40,
+    paddingLeft: 24,
+    paddingRight: 24,
+    paddingTop: 12,
+    paddingBottom: 32,
+    minHeight: 0,
   },
   heroContent: {
     flex: 1,
-    maxWidth: 580,
+    maxWidth: 600,
     paddingRight: 40,
+    paddingVertical: 40,
     zIndex: 2,
   },
   heroContentMobile: {
     maxWidth: '100%',
-    textAlign: 'center',
-    alignItems: 'center',
-    marginBottom: 60,
+    marginBottom: 28,
     paddingRight: 0,
+    paddingVertical: 8,
   },
-  heroTitle: {
-    fontSize: 60.8, // 3.8rem
-    fontWeight: '800',
-    color: '#1f2937',
-    lineHeight: 70, // 1.15
-    marginBottom: 24,
-    letterSpacing: -1.2,
-  },
-  heroTitleTablet: {
-    fontSize: 44.8, // 2.8rem
-    lineHeight: 52,
-  },
-  heroSubtitle: {
-    fontSize: 17.6, // 1.1rem
-    color: '#6b7280',
-    lineHeight: 30, // 1.7
-    marginBottom: 40,
-    maxWidth: 500,
-  },
-  heroButtons: {
+  eyebrow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 24,
-    marginBottom: 60,
+    gap: 8,
+    alignSelf: 'flex-start',
+    backgroundColor: '#f0fdfa',
+    borderWidth: 1,
+    borderColor: '#99f6e4',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    marginBottom: 20,
   },
-  heroButtonsMobile: {
-    justifyContent: 'center',
+  eyebrowDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#14b8a6',
   },
-  btnPrimary: {
-    backgroundColor: '#65dfd2',
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 99,
-    ...Platform.select({
-      web: { boxShadow: '0 8px 24px rgba(79, 209, 197, 0.35)' },
-      default: { shadowColor: 'rgba(79,209,197,0.35)', shadowOffset: {width:0, height:8}, shadowOpacity: 1, shadowRadius: 24 }
-    })
+  eyebrowText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#0f766e',
+    letterSpacing: 0.3,
   },
-  btnPrimaryText: {
-    color: 'white',
-    fontSize: 16.8, // 1.05rem
-    fontWeight: '600',
+  heroTitle: {
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontSize: 54,
+    color: '#0f172a',
+    lineHeight: 60,
+    marginBottom: 20,
+    letterSpacing: -1.4,
   },
-  btnSecondary: {
+  heroTitleTablet: {
+    fontSize: 42,
+    lineHeight: 48,
+    letterSpacing: -1,
+  },
+  heroTitleMobile: {
+    fontSize: 33,
+    lineHeight: 40,
+    letterSpacing: -0.8,
+  },
+  heroSubtitle: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 16.5,
+    color: '#475569',
+    lineHeight: 27,
+    marginBottom: 34,
+    maxWidth: 520,
+  },
+  heroSubtitleMobile: {
+    fontSize: 15,
+    lineHeight: 24,
+    marginBottom: 26,
+  },
+  portalRow: {
+    flexDirection: 'row',
+    gap: 14,
+    flexWrap: 'wrap',
+  },
+  portalRowMobile: {
+    flexDirection: 'column',
+  },
+  portalCardPrimary: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    backgroundColor: '#0d9488',
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderRadius: 14,
+    flexGrow: 1,
+    flexBasis: 260,
+    ...Platform.select({
+      web: { boxShadow: '0 10px 26px rgba(13, 148, 136, 0.28)' },
+      default: {
+        shadowColor: 'rgba(13,148,136,0.28)',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 1,
+        shadowRadius: 26,
+        elevation: 6,
+      },
+    }),
   },
-  iconWrapper: {
-    width: 36,
-    height: 36,
-    backgroundColor: 'rgba(101, 223, 210, 0.15)',
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnSecondaryText: {
-    color: '#65dfd2',
-    fontSize: 16.8,
-    fontWeight: '600',
-  },
-  heroStats: {
-    flexDirection: 'row',
-    gap: 48,
-  },
-  heroStatsTablet: {
-    gap: 24,
-  },
-  heroStatsMobile: {
-    justifyContent: 'center',
-  },
-  statItem: {
+  portalCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 12,
+    backgroundColor: '#ffffff',
+    borderWidth: 1.5,
+    borderColor: '#99f6e4',
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderRadius: 14,
+    flexGrow: 1,
+    flexBasis: 260,
   },
-  statIcon: {
-    width: 44,
-    height: 44,
-    backgroundColor: '#65dfd2',
-    borderRadius: 22,
+  portalIconLight: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#ccfbf1',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  statInfo: {
-    flexDirection: 'column',
+  portalIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#f0fdfa',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  statValue: {
-    fontSize: 20, // 1.25rem
-    fontWeight: '700',
-    color: '#1f2937',
-    lineHeight: 24,
+  portalCopy: {
+    flex: 1,
   },
-  statLabel: {
-    fontSize: 13.6, // 0.85rem
-    color: '#6b7280',
-    fontWeight: '500',
+  portalTitleLight: {
+    fontFamily: 'PlusJakartaSans_700Bold',
+    fontSize: 15.5,
+    color: '#ffffff',
+  },
+  portalSubLight: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12.5,
+    color: 'rgba(255,255,255,0.85)',
+    marginTop: 2,
+  },
+  portalTitle: {
+    fontFamily: 'PlusJakartaSans_700Bold',
+    fontSize: 15.5,
+    color: '#0f172a',
+  },
+  portalSub: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12.5,
+    color: '#64748b',
+    marginTop: 2,
   },
   heroVisual: {
-    flex: 1.2,
+    flex: 1.1,
     alignSelf: 'stretch',
     position: 'relative',
     alignItems: 'center',
@@ -372,11 +485,11 @@ const styles = StyleSheet.create({
   heroVisualMobile: {
     width: '100%',
     justifyContent: 'center',
-    minHeight: 400,
+    minHeight: 320,
   },
   visualShape: {
     position: 'absolute',
-    top: -150,
+    top: -90,
     bottom: 0,
     right: 0,
     left: 0,
@@ -385,9 +498,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   visualShapeMobile: {
-    width: '100vw' as any,
-    right: -40,
-    top: '10%',
+    right: -24,
+    left: -24,
+    top: '12%',
   },
   shapeCircle: {
     position: 'absolute',
@@ -397,22 +510,16 @@ const styles = StyleSheet.create({
     pointerEvents: 'none',
   },
   shapeCircle1: {
-    width: 320,
-    height: 320,
-    top: '15%',
-    right: '18%',
+    width: 300,
+    height: 300,
+    top: '16%',
+    right: '16%',
   },
   shapeCircle2: {
-    width: 220,
-    height: 220,
-    bottom: '12%',
+    width: 200,
+    height: 200,
+    bottom: '10%',
     right: -40,
-  },
-  shapeCircle3: {
-    width: 160,
-    height: 160,
-    top: '52%',
-    left: '22%',
   },
   visualImage: {
     position: 'absolute',
@@ -430,7 +537,141 @@ const styles = StyleSheet.create({
   visualImageMobile: {
     position: 'relative',
     height: 'auto',
-    maxHeight: 350,
-    marginTop: 40,
+    maxHeight: 300,
+    marginTop: 30,
+  },
+  section: {
+    paddingHorizontal: 80,
+    paddingVertical: 56,
+  },
+  sectionMobile: {
+    paddingHorizontal: 24,
+    paddingVertical: 40,
+  },
+  sectionKicker: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12.5,
+    color: '#0f766e',
+    letterSpacing: 1.6,
+    textTransform: 'uppercase',
+    marginBottom: 26,
+  },
+  pillarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 18,
+  },
+  pillarCard: {
+    flexGrow: 1,
+    flexBasis: 230,
+    minWidth: 210,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 14,
+    padding: 20,
+  },
+  pillarIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#f0fdfa',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
+  pillarTitle: {
+    fontFamily: 'PlusJakartaSans_700Bold',
+    fontSize: 17,
+    color: '#0f172a',
+    marginBottom: 8,
+  },
+  pillarBody: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13.5,
+    color: '#64748b',
+    lineHeight: 21,
+  },
+  flowSection: {
+    backgroundColor: '#f8fafc',
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+  },
+  flowHeading: {
+    fontFamily: 'PlusJakartaSans_700Bold',
+    fontSize: 24,
+    color: '#0f172a',
+    letterSpacing: -0.5,
+    marginBottom: 30,
+  },
+  flowRow: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: 10,
+  },
+  flowRowMobile: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
+  flowStep: {
+    flexGrow: 1,
+    flexBasis: 160,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 14,
+    padding: 18,
+  },
+  flowIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#ccfbf1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  flowLabel: {
+    fontFamily: 'PlusJakartaSans_700Bold',
+    fontSize: 15,
+    color: '#0f172a',
+    marginBottom: 4,
+  },
+  flowCaption: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12.5,
+    color: '#64748b',
+    lineHeight: 19,
+  },
+  flowArrow: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 26,
+  },
+  flowArrowMobile: {
+    width: '100%',
+    paddingVertical: 4,
+  },
+  flowFootnote: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13.5,
+    color: '#64748b',
+    lineHeight: 21,
+    marginTop: 24,
+    maxWidth: 620,
+  },
+  footer: {
+    paddingHorizontal: 80,
+    paddingVertical: 26,
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+  },
+  footerMobile: {
+    paddingHorizontal: 24,
+  },
+  footerText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12.5,
+    color: '#94a3b8',
   },
 });

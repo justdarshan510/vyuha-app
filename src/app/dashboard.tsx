@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -12,27 +12,95 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
-  House, Users, BarChart2, BookOpen, Settings, LogOut, ChevronDown, Bell,
+  House, Users, BarChart2, LogOut, ChevronDown, Bell,
   Check, Pencil, CheckCheck, AlertCircle, Activity, TrendingUp, Droplet,
-  HeartPulse, Plus, ChevronLeft, ChevronRight, BellRing, CheckSquare,
-  FileCheck, ArrowRight, Edit3, X, Pin, LayoutGrid, FlaskConical
+  HeartPulse, ChevronLeft, ChevronRight, BellRing, CheckSquare,
+  FileCheck, Edit3, X, Pin, LayoutGrid, FlaskConical
 } from 'lucide-react-native';
-import Svg, { Circle, Rect, Path, G } from 'react-native-svg';
+import Svg, { Circle, Rect, Path } from 'react-native-svg';
+import { router } from 'expo-router';
+import { useAuth } from '../context/AuthContext';
+import { useAppState } from '../context/AppStateContext';
+import { RISK_BAND_META } from '../data/mockData';
+
+const AST_PANEL = [
+  { drug: 'Ceftriaxone', mic: '> 32 µg/mL', result: 'Resistant' },
+  { drug: 'Piperacillin–tazobactam', mic: '64 µg/mL', result: 'Resistant' },
+  { drug: 'Meropenem', mic: '0.5 µg/mL', result: 'Susceptible' },
+  { drug: 'Amikacin', mic: '4 µg/mL', result: 'Susceptible' },
+  { drug: 'Ciprofloxacin', mic: '8 µg/mL', result: 'Intermediate' },
+];
+
+const AST_RESULT_TONE: Record<string, { color: string; bg: string }> = {
+  Resistant: { color: '#dc2626', bg: '#fee2e2' },
+  Intermediate: { color: '#d97706', bg: '#fef3c7' },
+  Susceptible: { color: '#0d9488', bg: '#ccfbf1' },
+};
+
+const CARE_TASKS = [
+  { id: 't1', title: 'Repeat Blood Culture & AST', meta: 'At 10:00 AM • STAT Order', tone: '#fee2e2', color: '#ef4444', Icon: BellRing },
+  { id: 't2', title: 'Serum Creatinine & eGFR Check', meta: 'At 01:30 PM • Renal Watch', tone: '#ccfbf1', color: '#0d9488', Icon: CheckSquare },
+  { id: 't3', title: 'ID Stewardship Team Round', meta: 'At 04:00 PM • Bedside', tone: '#ede9fe', color: '#7c3aed', Icon: FileCheck },
+  { id: 't4', title: 'Procalcitonin Follow-up', meta: 'At 06:30 PM • Lab Check', tone: '#e0f2fe', color: '#0284c7', Icon: FlaskConical },
+];
+
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
 
 export default function DashboardScreen() {
   const { width } = useWindowDimensions();
   const isTablet = width <= 1280;
   const isMobile = width <= 1024;
 
+  const { session, logout } = useAuth();
+  const { patients } = useAppState();
+
   const [activeNav, setActiveNav] = useState('overview');
   const [showNotif, setShowNotif] = useState(false);
   const [showOverrideModal, setShowOverrideModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
-  const [showAddMetricModal, setShowAddMetricModal] = useState(false);
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showPatientList, setShowPatientList] = useState(false);
   const [heroAccepted, setHeroAccepted] = useState(false);
   const [heroOverridden, setHeroOverridden] = useState(false);
   const [telemetryTab, setTelemetryTab] = useState<'levels' | 'trend'>('levels');
+  const [overrideReason, setOverrideReason] = useState('');
+  const [overrideNotes, setOverrideNotes] = useState('');
+  const [doneTasks, setDoneTasks] = useState<string[]>([]);
+  const [monthIndex, setMonthIndex] = useState(7);
+  const [selectedDay, setSelectedDay] = useState(14);
+
+  const mainScrollRef = useRef<ScrollView | null>(null);
+  const telemetryYRef = useRef(0);
+
+  const focusPatient = useMemo(
+    () => patients.find((p) => p.alphaId === 'A-102394') ?? patients[0],
+    [patients]
+  );
+
+  const authorised = !!session && session.role === 'doctor';
+
+  useEffect(() => {
+    if (!authorised) router.replace('/login/doctor');
+  }, [authorised]);
+
+  const handleLogout = () => {
+    logout();
+    router.replace('/login');
+  };
+
+  const toggleTask = (id: string) =>
+    setDoneTasks((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
+
+  const confirmOverride = () => {
+    setShowOverrideModal(false);
+    setHeroOverridden(true);
+  };
+
+  const daysInMonth = new Date(2026, monthIndex + 1, 0).getDate();
+
+  if (!authorised) return null;
 
   return (
     <LinearGradient colors={['#e6fffa', '#b2f5ea', '#81e6d9']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.body}>
@@ -51,29 +119,43 @@ export default function DashboardScreen() {
             )}
 
             <View style={[styles.navMenu, isMobile && styles.navMenuMobile]}>
-              <TouchableOpacity style={[styles.navItem, activeNav === 'overview' && styles.navItemActive]} onPress={() => setActiveNav('overview')}>
+              <TouchableOpacity
+                style={[styles.navItem, activeNav === 'overview' && styles.navItemActive]}
+                onPress={() => {
+                  setActiveNav('overview');
+                  mainScrollRef.current?.scrollTo({ y: 0, animated: true });
+                }}
+                accessibilityLabel="Case overview"
+              >
                 <House color={activeNav === 'overview' ? '#14b8a6' : '#64748b'} size={22} strokeWidth={2.5} />
                 {activeNav === 'overview' && <View style={styles.navItemIndicator} />}
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.navItem, activeNav === 'patients' && styles.navItemActive]} onPress={() => setActiveNav('patients')}>
-                <Users color={activeNav === 'patients' ? '#14b8a6' : '#64748b'} size={22} strokeWidth={2.5} />
-                {activeNav === 'patients' && <View style={styles.navItemIndicator} />}
+              <TouchableOpacity
+                style={styles.navItem}
+                onPress={() => setShowPatientList(true)}
+                accessibilityLabel="My patient list"
+              >
+                <Users color="#64748b" size={22} strokeWidth={2.5} />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.navItem, activeNav === 'analytics' && styles.navItemActive]} onPress={() => setActiveNav('analytics')}>
+              <TouchableOpacity
+                style={[styles.navItem, activeNav === 'analytics' && styles.navItemActive]}
+                onPress={() => {
+                  setActiveNav('analytics');
+                  mainScrollRef.current?.scrollTo({ y: telemetryYRef.current, animated: true });
+                }}
+                accessibilityLabel="Biomarker analytics"
+              >
                 <BarChart2 color={activeNav === 'analytics' ? '#14b8a6' : '#64748b'} size={22} strokeWidth={2.5} />
                 {activeNav === 'analytics' && <View style={styles.navItemIndicator} />}
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.navItem, activeNav === 'guidelines' && styles.navItemActive]} onPress={() => setActiveNav('guidelines')}>
-                <BookOpen color={activeNav === 'guidelines' ? '#14b8a6' : '#64748b'} size={22} strokeWidth={2.5} />
-                {activeNav === 'guidelines' && <View style={styles.navItemIndicator} />}
               </TouchableOpacity>
             </View>
 
             <View style={[styles.navFooter, isMobile && styles.navMenuMobile]}>
-              <TouchableOpacity style={styles.navItemFooter}>
-                <Settings color="#64748b" size={22} strokeWidth={2.5} />
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.navItemFooter, styles.navLogout]}>
+              <TouchableOpacity
+                style={[styles.navItemFooter, styles.navLogout]}
+                onPress={handleLogout}
+                accessibilityLabel="Sign out"
+              >
                 <LogOut color="#f87171" size={22} strokeWidth={2.5} />
               </TouchableOpacity>
             </View>
@@ -81,6 +163,7 @@ export default function DashboardScreen() {
 
           {/* 2. Center Main Content */}
           <ScrollView
+            ref={mainScrollRef}
             style={styles.mainContent}
             contentContainerStyle={styles.mainContentContainer}
             showsVerticalScrollIndicator={false}
@@ -88,17 +171,27 @@ export default function DashboardScreen() {
             {/* Top Header Row */}
             <View style={styles.contentHeader}>
               <View style={styles.userGreeting}>
-                <Text style={styles.greetingSubtitle}>Hi, Dr. Sakif</Text>
-                <Text style={styles.greetingTitle}>Welcome Back!</Text>
+                <Text style={styles.greetingSubtitle}>{session.name}</Text>
+                <Text style={styles.greetingTitle}>Today&apos;s AMR review</Text>
               </View>
               
               <View style={styles.headerActions}>
                 {/* Patient Selector Pill */}
-                <TouchableOpacity style={styles.patientPill}>
-                  <View style={styles.patientAvatar}><Text style={styles.patientAvatarText}>JD</Text></View>
+                <TouchableOpacity
+                  style={styles.patientPill}
+                  onPress={() => setShowPatientList(true)}
+                  accessibilityLabel="Switch patient"
+                >
+                  <View style={styles.patientAvatar}>
+                    <Text style={styles.patientAvatarText}>
+                      {focusPatient.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                    </Text>
+                  </View>
                   <View style={styles.patientMeta}>
-                    <Text style={styles.patientTitle}>John Doe</Text>
-                    <Text style={styles.patientSub}>ICU Bed 4 • ID: #948271</Text>
+                    <Text style={styles.patientTitle}>{focusPatient.name}</Text>
+                    <Text style={styles.patientSub}>
+                      {focusPatient.ward} • {focusPatient.alphaId}
+                    </Text>
                   </View>
                   <ChevronDown color="#64748b" size={16} />
                 </TouchableOpacity>
@@ -150,10 +243,20 @@ export default function DashboardScreen() {
                   <View style={styles.tagPulse} />
                   <Text style={styles.tagText}>AI Clinical Decision Support</Text>
                 </View>
-                <Text style={styles.heroHeading}>High AMR Risk Detected: Escalation Recommended</Text>
+                <Text style={styles.heroHeading}>High AMR risk: escalation recommended</Text>
                 <Text style={styles.heroDesc}>
-                  Consider escalating from <Text style={{fontFamily: 'Inter_700Bold'}}>Ceftriaxone</Text> to <Text style={{fontFamily: 'Inter_700Bold'}}>Meropenem</Text> due to increasing AMR risk index (84%) and recent broad-spectrum beta-lactam exposure.
+                  Consider escalating from <Text style={{fontFamily: 'Inter_700Bold'}}>Ceftriaxone</Text> to <Text style={{fontFamily: 'Inter_700Bold'}}>Meropenem</Text>. Predicted resistance to the current regimen is <Text style={{fontFamily: 'Inter_700Bold'}}>{focusPatient.risk.score}%</Text> for {focusPatient.name}.
                 </Text>
+
+                <View style={styles.driverBox}>
+                  <Text style={styles.driverBoxTitle}>Why this recommendation</Text>
+                  {focusPatient.risk.drivers.map((driver) => (
+                    <View key={driver} style={styles.driverRow}>
+                      <View style={styles.driverDot} />
+                      <Text style={styles.driverText}>{driver}</Text>
+                    </View>
+                  ))}
+                </View>
                 
                 {(!heroAccepted && !heroOverridden) && (
                   <View style={styles.heroActions}>
