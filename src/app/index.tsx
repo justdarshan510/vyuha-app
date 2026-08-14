@@ -33,9 +33,9 @@ import Svg, { Polygon } from 'react-native-svg';
 export default function LandingScreen() {
   const { width, height } = useWindowDimensions();
   const router = useRouter();
-  const isTablet = width <= 1200;
-  const isMobile = width <= 992;
-  const isSmallMobile = width <= 600;
+  const isTablet = width <= 1100;
+  const isMobile = width <= 850;
+  const isSmallMobile = width <= 520;
 
   // Modals state
   const [showDemoModal, setShowDemoModal] = useState(false);
@@ -117,14 +117,17 @@ export default function LandingScreen() {
       <View style={[styles.bgCircle, styles.bgCircle2]} />
       <View style={[styles.bgCircle, styles.bgCircle3]} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={[styles.scrollContent, isMobile && styles.scrollContentMobile]} 
+        showsVerticalScrollIndicator={false}
+      >
         {/* Navigation */}
-        <View style={[styles.navbar, isMobile && styles.navbarMobile]}>
+        <View style={[styles.navbar, isMobile && styles.navbarMobile, isSmallMobile && styles.navbarSmallMobile]}>
           <Link href="/" asChild>
-            <TouchableOpacity style={styles.navBrand}>
+            <TouchableOpacity style={styles.navBrand} activeOpacity={0.8}>
               <Image 
                 source={require('../../assets/images/logo.png')} 
-                style={styles.logoImg}
+                style={[styles.logoImg, isSmallMobile && styles.logoImgSmall]} 
                 resizeMode="contain" 
               />
             </TouchableOpacity>
@@ -132,11 +135,11 @@ export default function LandingScreen() {
 
           <View style={styles.navActions}>
             <TouchableOpacity 
-              style={styles.btnLogin}
+              style={[styles.btnLogin, isSmallMobile && styles.btnLoginSmall]}
               onPress={() => setShowPortalModal(true)}
               activeOpacity={0.85}
             >
-              <Text style={styles.btnLoginText}>Access Portals</Text>
+              <Text style={[styles.btnLoginText, isSmallMobile && styles.btnLoginTextSmall]}>Access Portals</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -147,21 +150,34 @@ export default function LandingScreen() {
           {/* Left Content */}
           <View style={[styles.heroContent, isMobile && styles.heroContentMobile]}>
             {/* Live Reactive Badge */}
-            <View style={styles.liveStatusPill}>
+            <View style={[styles.liveStatusPill, isMobile && styles.liveStatusPillMobile]}>
               <Animated.View style={[styles.liveDot, { transform: [{ scale: pulseAnim }] }]} />
-              <Text style={styles.liveStatusText}>Live CDS Telemetry • Real-Time AI Inference Active</Text>
+              <Text style={styles.liveStatusText} numberOfLines={1}>
+                {isSmallMobile ? 'Live CDS Active' : 'Live CDS Telemetry • Real-Time AI Inference Active'}
+              </Text>
             </View>
 
-            <Text style={[styles.heroTitle, isTablet && styles.heroTitleTablet, isSmallMobile && styles.heroTitleSmallMobile]}>
+            <Text style={[
+              styles.heroTitle, 
+              isTablet && styles.heroTitleTablet, 
+              isMobile && styles.heroTitleMobile,
+              isSmallMobile && styles.heroTitleSmallMobile
+            ]}>
               Antimicrobial Resistance (AMR) Clinical Decision Support
             </Text>
-            <Text style={styles.heroSubtitle}>
+            
+            <Text style={[styles.heroSubtitle, isMobile && styles.heroSubtitleMobile]}>
               Real-time risk stratification, antibiotic exposure telemetry, and clinical override protocols for critical care units.
             </Text>
             
-            <View style={[styles.heroButtons, isMobile && styles.heroButtonsMobile]}>
+            {/* Buttons Group */}
+            <View style={[
+              styles.heroButtons, 
+              isMobile && styles.heroButtonsMobile,
+              isSmallMobile && styles.heroButtonsSmallMobile
+            ]}>
               <TouchableOpacity 
-                style={styles.btnPrimary} 
+                style={[styles.btnPrimary, isSmallMobile && styles.btnPrimarySmall]} 
                 onPress={() => setShowPortalModal(true)}
                 activeOpacity={0.85}
               >
@@ -170,25 +186,31 @@ export default function LandingScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity 
-                style={styles.btnSecondary} 
+                style={[styles.btnSecondary, isSmallMobile && styles.btnSecondarySmall]} 
                 onPress={() => setShowDemoModal(true)}
                 activeOpacity={0.85}
               >
                 <View style={styles.iconWrapper}>
-                  <Play color="#65dfd2" size={18} fill="#65dfd2" />
+                  <Play color="#0d9488" size={16} fill="#0d9488" />
                 </View>
                 <Text style={styles.btnSecondaryText}>View Interactive Demo</Text>
               </TouchableOpacity>
             </View>
             
-            <View style={[styles.heroStats, isTablet && styles.heroStatsTablet, isMobile && styles.heroStatsMobile]}>
+            {/* Stats Group */}
+            <View style={[
+              styles.heroStats, 
+              isTablet && styles.heroStatsTablet, 
+              isMobile && styles.heroStatsMobile,
+              isSmallMobile && styles.heroStatsSmallMobile
+            ]}>
               <TouchableOpacity 
-                style={styles.statItem} 
+                style={[styles.statItem, isSmallMobile && styles.statItemSmall]} 
                 activeOpacity={0.8}
                 onPress={() => setShowDemoModal(true)}
               >
                 <View style={styles.statIcon}>
-                  <Activity color="#ffffff" size={22} />
+                  <Activity color="#ffffff" size={20} />
                 </View>
                 <View style={styles.statInfo}>
                   <Text style={styles.statValue}>0.2s</Text>
@@ -197,12 +219,12 @@ export default function LandingScreen() {
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={styles.statItem} 
+                style={[styles.statItem, isSmallMobile && styles.statItemSmall]} 
                 activeOpacity={0.8}
                 onPress={() => setShowDemoModal(true)}
               >
                 <View style={styles.statIcon}>
-                  <Microscope color="#ffffff" size={22} />
+                  <Microscope color="#ffffff" size={20} />
                 </View>
                 <View style={styles.statInfo}>
                   <Text style={styles.statValue}>12+</Text>
@@ -211,12 +233,12 @@ export default function LandingScreen() {
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={styles.statItem} 
+                style={[styles.statItem, isSmallMobile && styles.statItemSmall]} 
                 activeOpacity={0.8}
                 onPress={() => setShowPortalModal(true)}
               >
                 <View style={styles.statIcon}>
-                  <ShieldAlert color="#ffffff" size={22} />
+                  <ShieldAlert color="#ffffff" size={20} />
                 </View>
                 <View style={styles.statInfo}>
                   <Text style={styles.statValue}>100%</Text>
@@ -230,24 +252,28 @@ export default function LandingScreen() {
           <View style={[styles.heroVisual, isMobile && styles.heroVisualMobile]}>
             <View style={[
               styles.visualShape, 
-              isMobile ? styles.visualShapeMobile : null,
+              isMobile && styles.visualShapeMobile,
               Platform.OS === 'web' 
-                ? { clipPath: isMobile ? 'polygon(0 15%, 100% 0, 100% 100%, 0 100%)' : 'polygon(45% 0, 100% 0, 100% 100%, 0% 100%)' } as any
+                ? { 
+                    clipPath: isMobile 
+                      ? 'polygon(0% 12%, 100% 0%, 100% 100%, 0% 100%)' 
+                      : 'polygon(45% 0%, 100% 0%, 100% 100%, 0% 100%)' 
+                  } as any
                 : {}
             ]}>
               {/* Fallback for Native if clipPath is missing */}
               {Platform.OS !== 'web' && (
                 <View style={StyleSheet.absoluteFill}>
                   <Svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100">
-                    <Polygon points={isMobile ? "0,15 100,0 100,100 0,100" : "45,0 100,0 100,100 0,100"} fill="#65dfd2" />
+                    <Polygon points={isMobile ? "0,12 100,0 100,100 0,100" : "45,0 100,0 100,100 0,100"} fill="#65dfd2" />
                   </Svg>
                 </View>
               )}
 
               {/* Background circles on the teal shape */}
-              <View style={[styles.shapeCircle, styles.shapeCircle1]} />
-              <View style={[styles.shapeCircle, styles.shapeCircle2]} />
-              <View style={[styles.shapeCircle, styles.shapeCircle3]} />
+              <View style={[styles.shapeCircle, styles.shapeCircle1, isMobile && styles.shapeCircle1Mobile]} />
+              <View style={[styles.shapeCircle, styles.shapeCircle2, isMobile && styles.shapeCircle2Mobile]} />
+              <View style={[styles.shapeCircle, styles.shapeCircle3, isMobile && styles.shapeCircle3Mobile]} />
             </View>
 
             {/* Reactive Floating Telemetry Card 1 */}
@@ -284,8 +310,13 @@ export default function LandingScreen() {
 
             <Image 
               source={require('../../assets/images/doctor_female_transparent_cropped.png')}
-              style={[styles.visualImage, isTablet && styles.visualImageTablet, isMobile && styles.visualImageMobile]}
-              resizeMode={isMobile ? "cover" : "contain"}
+              style={[
+                styles.visualImage, 
+                isTablet && styles.visualImageTablet, 
+                isMobile && styles.visualImageMobile,
+                isSmallMobile && styles.visualImageSmallMobile
+              ]}
+              resizeMode="contain"
             />
           </View>
 
@@ -537,6 +568,11 @@ const styles = StyleSheet.create({
   },
   navbarMobile: {
     paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  navbarSmallMobile: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
   },
   navBrand: {
     flexDirection: 'row',
@@ -546,6 +582,10 @@ const styles = StyleSheet.create({
     height: 80,
     width: 160,
   },
+  logoImgSmall: {
+    height: 46,
+    width: 110,
+  },
   navLinks: {
     flexDirection: 'row',
     gap: 32,
@@ -554,7 +594,7 @@ const styles = StyleSheet.create({
   },
   navLink: {
     color: '#6b7280',
-    fontSize: 15.2, // 0.95rem
+    fontSize: 15.2,
     fontWeight: '500',
   },
   navActions: {
@@ -571,10 +611,17 @@ const styles = StyleSheet.create({
       default: { shadowColor: 'rgba(79,209,197,0.3)', shadowOffset: {width:0, height:4}, shadowOpacity: 1, shadowRadius: 12 }
     })
   },
+  btnLoginSmall: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
   btnLoginText: {
     color: 'white',
     fontSize: 15.2,
     fontWeight: '600',
+  },
+  btnLoginTextSmall: {
+    fontSize: 13,
   },
   hero: {
     flexDirection: 'row',
@@ -586,10 +633,11 @@ const styles = StyleSheet.create({
   },
   heroMobile: {
     flexDirection: 'column',
-    paddingLeft: 40,
-    paddingRight: 40,
-    paddingTop: 40,
-    paddingBottom: 40,
+    paddingLeft: 18,
+    paddingRight: 18,
+    paddingTop: 16,
+    paddingBottom: 30,
+    minHeight: 'auto' as any,
   },
   heroContent: {
     flex: 1,
@@ -601,8 +649,9 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
     textAlign: 'center',
     alignItems: 'center',
-    marginBottom: 60,
+    marginBottom: 36,
     paddingRight: 0,
+    width: '100%',
   },
   heroTitle: {
     fontSize: 48,
@@ -613,8 +662,20 @@ const styles = StyleSheet.create({
     letterSpacing: -1,
   },
   heroTitleTablet: {
-    fontSize: 44.8, // 2.8rem
-    lineHeight: 52,
+    fontSize: 38,
+    lineHeight: 46,
+  },
+  heroTitleMobile: {
+    fontSize: 30,
+    lineHeight: 38,
+    textAlign: 'center',
+    marginBottom: 14,
+  },
+  heroTitleSmallMobile: {
+    fontSize: 25,
+    lineHeight: 32,
+    textAlign: 'center',
+    marginBottom: 12,
   },
   heroSubtitle: {
     fontSize: 16,
@@ -623,68 +684,122 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     maxWidth: 500,
   },
+  heroSubtitleMobile: {
+    fontSize: 14.5,
+    lineHeight: 22,
+    textAlign: 'center',
+    marginBottom: 22,
+    maxWidth: 440,
+  },
   heroButtons: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 24,
+    gap: 20,
     marginBottom: 32,
   },
   heroButtonsMobile: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'center',
+    gap: 12,
+    marginBottom: 28,
+    width: '100%',
+  },
+  heroButtonsSmallMobile: {
+    flexDirection: 'column',
+    width: '100%',
+    alignItems: 'stretch',
+    gap: 10,
+    marginBottom: 24,
   },
   btnPrimary: {
     backgroundColor: '#65dfd2',
     paddingVertical: 14,
-    paddingHorizontal: 32,
+    paddingHorizontal: 28,
     borderRadius: 99,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     ...Platform.select({
       web: { boxShadow: '0 8px 24px rgba(79, 209, 197, 0.35)' },
       default: { shadowColor: 'rgba(79,209,197,0.35)', shadowOffset: {width:0, height:8}, shadowOpacity: 1, shadowRadius: 24 }
     })
   },
+  btnPrimarySmall: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    width: '100%',
+  },
   btnPrimaryText: {
     color: 'white',
-    fontSize: 16.8, // 1.05rem
+    fontSize: 16,
     fontWeight: '600',
   },
   btnSecondary: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 8,
+  },
+  btnSecondarySmall: {
+    width: '100%',
+    paddingVertical: 10,
+    borderRadius: 99,
+    backgroundColor: 'rgba(101, 223, 210, 0.1)',
   },
   iconWrapper: {
-    width: 36,
-    height: 36,
-    backgroundColor: 'rgba(101, 223, 210, 0.15)',
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    backgroundColor: 'rgba(101, 223, 210, 0.2)',
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },
   btnSecondaryText: {
-    color: '#65dfd2',
-    fontSize: 16.8,
+    color: '#0d9488',
+    fontSize: 15.5,
     fontWeight: '600',
   },
   heroStats: {
     flexDirection: 'row',
-    gap: 48,
+    gap: 40,
   },
   heroStatsTablet: {
-    gap: 24,
+    gap: 20,
   },
   heroStatsMobile: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'center',
+    gap: 14,
+    width: '100%',
+  },
+  heroStatsSmallMobile: {
+    flexDirection: 'column',
+    width: '100%',
+    gap: 10,
+    alignItems: 'stretch',
   },
   statItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 14,
+  },
+  statItemSmall: {
+    backgroundColor: '#f8fafc',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    width: '100%',
   },
   statIcon: {
-    width: 44,
-    height: 44,
+    width: 42,
+    height: 42,
     backgroundColor: '#65dfd2',
-    borderRadius: 22,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -692,13 +807,13 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   statValue: {
-    fontSize: 20, // 1.25rem
+    fontSize: 19,
     fontWeight: '700',
     color: '#1f2937',
-    lineHeight: 24,
+    lineHeight: 22,
   },
   statLabel: {
-    fontSize: 13.6, // 0.85rem
+    fontSize: 13,
     color: '#6b7280',
     fontWeight: '500',
   },
@@ -712,8 +827,14 @@ const styles = StyleSheet.create({
   },
   heroVisualMobile: {
     width: '100%',
+    minHeight: 320,
+    height: 360,
     justifyContent: 'center',
-    minHeight: 400,
+    alignItems: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+    borderRadius: 24,
+    marginTop: 8,
   },
   visualShape: {
     position: 'absolute',
@@ -726,9 +847,13 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   visualShapeMobile: {
-    width: '100vw' as any,
-    right: -40,
-    top: '10%',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    width: '100%',
+    borderRadius: 24,
+    backgroundColor: '#65dfd2',
   },
   shapeCircle: {
     position: 'absolute',
@@ -743,17 +868,35 @@ const styles = StyleSheet.create({
     top: '15%',
     right: '18%',
   },
+  shapeCircle1Mobile: {
+    width: 220,
+    height: 220,
+    top: '-10%',
+    right: '-10%',
+  },
   shapeCircle2: {
     width: 220,
     height: 220,
     bottom: '12%',
     right: -40,
   },
+  shapeCircle2Mobile: {
+    width: 160,
+    height: 160,
+    bottom: '-10%',
+    left: '-10%',
+  },
   shapeCircle3: {
     width: 160,
     height: 160,
     top: '52%',
     left: '22%',
+  },
+  shapeCircle3Mobile: {
+    width: 120,
+    height: 120,
+    top: '40%',
+    right: '10%',
   },
   visualImage: {
     position: 'absolute',
@@ -770,9 +913,14 @@ const styles = StyleSheet.create({
   },
   visualImageMobile: {
     position: 'relative',
-    height: 'auto',
-    maxHeight: 350,
-    marginTop: 40,
+    width: '100%',
+    height: 330,
+    zIndex: 2,
+    pointerEvents: 'none',
+    alignSelf: 'center',
+  },
+  visualImageSmallMobile: {
+    height: 280,
   },
   liveStatusPill: {
     flexDirection: 'row',
@@ -785,6 +933,10 @@ const styles = StyleSheet.create({
     borderRadius: 99,
     alignSelf: 'flex-start',
     marginBottom: 16,
+  },
+  liveStatusPillMobile: {
+    alignSelf: 'center',
+    marginBottom: 12,
   },
   liveDot: {
     width: 8,
