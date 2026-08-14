@@ -1,98 +1,436 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  useWindowDimensions,
+  Platform,
+  ScrollView,
+} from 'react-native';
+import { Play, Building2, Users, ClipboardCheck } from 'lucide-react-native';
+import { Link } from 'expo-router';
+import Svg, { Polygon } from 'react-native-svg';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+export default function LandingScreen() {
+  const { width, height } = useWindowDimensions();
+  const isTablet = width <= 1200;
+  const isMobile = width <= 992;
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <View style={styles.container}>
+      {/* Background Decorations */}
+      <View style={[styles.bgCircle, styles.bgCircle1]} />
+      <View style={[styles.bgCircle, styles.bgCircle2]} />
+      <View style={[styles.bgCircle, styles.bgCircle3]} />
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Navigation */}
+        <View style={[styles.navbar, isMobile && styles.navbarMobile]}>
+          <Link href="/" asChild>
+            <TouchableOpacity style={styles.navBrand}>
+              <Image 
+                source={require('../../assets/images/logo.png')} 
+                style={styles.logoImg}
+                resizeMode="contain" 
+              />
+            </TouchableOpacity>
+          </Link>
+          
+          {!isMobile && (
+            <View style={styles.navLinks}>
+              <TouchableOpacity><Text style={styles.navLink}>Features</Text></TouchableOpacity>
+              <TouchableOpacity><Text style={styles.navLink}>Integrations</Text></TouchableOpacity>
+              <TouchableOpacity><Text style={styles.navLink}>Security</Text></TouchableOpacity>
+              <TouchableOpacity><Text style={styles.navLink}>API</Text></TouchableOpacity>
+              <TouchableOpacity><Text style={styles.navLink}>About</Text></TouchableOpacity>
+            </View>
+          )}
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+          <View style={styles.navActions}>
+            <Link href="/auth" asChild>
+              <TouchableOpacity style={styles.btnLogin}>
+                <Text style={styles.btnLoginText}>Login / Sign Up</Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
+        </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+        {/* Hero Section */}
+        <View style={[styles.hero, isMobile && styles.heroMobile]}>
+          
+          {/* Left Content */}
+          <View style={[styles.heroContent, isMobile && styles.heroContentMobile]}>
+            <Text style={[styles.heroTitle, isTablet && styles.heroTitleTablet]}>
+              Empowering Clinical Decisions with Precision
+            </Text>
+            <Text style={styles.heroSubtitle}>
+              Advanced, real-time insights for healthcare professionals to provide exceptional, data-driven patient care.
+            </Text>
+            
+            <View style={[styles.heroButtons, isMobile && styles.heroButtonsMobile]}>
+              <Link href="/auth" asChild>
+                <TouchableOpacity style={styles.btnPrimary}>
+                  <Text style={styles.btnPrimaryText}>Get Started</Text>
+                </TouchableOpacity>
+              </Link>
+              <TouchableOpacity style={styles.btnSecondary}>
+                <View style={styles.iconWrapper}>
+                  <Play color="#65dfd2" size={18} fill="#65dfd2" />
+                </View>
+                <Text style={styles.btnSecondaryText}>Request Demo</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <View style={[styles.heroStats, isTablet && styles.heroStatsTablet, isMobile && styles.heroStatsMobile]}>
+              <View style={styles.statItem}>
+                <View style={styles.statIcon}>
+                  <Building2 color="#ffffff" size={22} />
+                </View>
+                <View style={styles.statInfo}>
+                  <Text style={styles.statValue}>50+</Text>
+                  <Text style={styles.statLabel}>Integrations</Text>
+                </View>
+              </View>
+              
+              <View style={styles.statItem}>
+                <View style={styles.statIcon}>
+                  <Users color="#ffffff" size={22} />
+                </View>
+                <View style={styles.statInfo}>
+                  <Text style={styles.statValue}>2K+</Text>
+                  <Text style={styles.statLabel}>Providers</Text>
+                </View>
+              </View>
+              
+              <View style={styles.statItem}>
+                <View style={styles.statIcon}>
+                  <ClipboardCheck color="#ffffff" size={22} />
+                </View>
+                <View style={styles.statInfo}>
+                  <Text style={styles.statValue}>99%</Text>
+                  <Text style={styles.statLabel}>Accuracy</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+          
+          {/* Right Visuals */}
+          <View style={[styles.heroVisual, isMobile && styles.heroVisualMobile]}>
+            <View style={[
+              styles.visualShape, 
+              isMobile ? styles.visualShapeMobile : null,
+              Platform.OS === 'web' 
+                ? { clipPath: isMobile ? 'polygon(0 15%, 100% 0, 100% 100%, 0 100%)' : 'polygon(18% 0, 100% 0, 100% 100%, 0% 100%)' } as any
+                : {}
+            ]}>
+              {/* Fallback for Native if clipPath is missing: absolute SVG to cover the clipped area */}
+              {Platform.OS !== 'web' && (
+                <View style={StyleSheet.absoluteFill}>
+                  <Svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100">
+                    <Polygon points={isMobile ? "0,15 100,0 100,100 0,100" : "18,0 100,0 100,100 0,100"} fill="#65dfd2" />
+                  </Svg>
+                </View>
+              )}
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+              {/* Background circles on the teal shape */}
+              <View style={[styles.shapeCircle, styles.shapeCircle1]} />
+              <View style={[styles.shapeCircle, styles.shapeCircle2]} />
+              <View style={[styles.shapeCircle, styles.shapeCircle3]} />
+            </View>
+
+            <Image 
+              source={require('../../assets/images/doctor_female_transparent_cropped.png')}
+              style={[styles.visualImage, isTablet && styles.visualImageTablet, isMobile && styles.visualImageMobile]}
+              resizeMode={isMobile ? "cover" : "contain"}
+            />
+          </View>
+
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  bgCircle: {
+    position: 'absolute',
+    borderRadius: 9999,
+    borderWidth: 15,
+    borderColor: 'rgba(79, 209, 197, 0.1)',
+    zIndex: -1,
+  },
+  bgCircle1: {
+    width: 250,
+    height: 250,
+    top: -50,
+    left: '10%',
+  },
+  bgCircle2: {
+    width: 400,
+    height: 400,
+    bottom: -100,
+    left: -150,
+  },
+  bgCircle3: {
+    width: 150,
+    height: 150,
+    bottom: 50,
+    right: '40%',
+  },
+  navbar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 60,
+    paddingVertical: 24,
+    zIndex: 10,
+  },
+  navbarMobile: {
+    paddingHorizontal: 20,
+  },
+  navBrand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoImg: {
+    height: 140,
+    width: 280, // Approximate width for logo aspect ratio
+  },
+  navLinks: {
+    flexDirection: 'row',
+    gap: 32,
+    marginLeft: 'auto',
+    marginRight: 40,
+  },
+  navLink: {
+    color: '#6b7280',
+    fontSize: 15.2, // 0.95rem
+    fontWeight: '500',
+  },
+  navActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  btnLogin: {
+    backgroundColor: '#65dfd2',
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 99,
+    ...Platform.select({
+      web: { boxShadow: '0 4px 12px rgba(79, 209, 197, 0.3)' },
+      default: { shadowColor: 'rgba(79,209,197,0.3)', shadowOffset: {width:0, height:4}, shadowOpacity: 1, shadowRadius: 12 }
+    })
+  },
+  btnLoginText: {
+    color: 'white',
+    fontSize: 15.2,
+    fontWeight: '600',
+  },
+  hero: {
+    flexDirection: 'row',
+    flex: 1,
+    minHeight: Platform.OS === 'web' ? 'calc(100vh - 128px)' : 600,
+    paddingLeft: 80,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  heroMobile: {
+    flexDirection: 'column',
+    paddingLeft: 40,
+    paddingRight: 40,
+    paddingTop: 40,
+    paddingBottom: 40,
+  },
+  heroContent: {
+    flex: 1,
+    maxWidth: 580,
+    paddingRight: 40,
+    zIndex: 2,
+  },
+  heroContentMobile: {
+    maxWidth: '100%',
+    textAlign: 'center',
+    alignItems: 'center',
+    marginBottom: 60,
+    paddingRight: 0,
+  },
+  heroTitle: {
+    fontSize: 60.8, // 3.8rem
+    fontWeight: '800',
+    color: '#1f2937',
+    lineHeight: 70, // 1.15
+    marginBottom: 24,
+    letterSpacing: -1.2,
+  },
+  heroTitleTablet: {
+    fontSize: 44.8, // 2.8rem
+    lineHeight: 52,
+  },
+  heroSubtitle: {
+    fontSize: 17.6, // 1.1rem
+    color: '#6b7280',
+    lineHeight: 30, // 1.7
+    marginBottom: 40,
+    maxWidth: 500,
+  },
+  heroButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 24,
+    marginBottom: 60,
+  },
+  heroButtonsMobile: {
     justifyContent: 'center',
+  },
+  btnPrimary: {
+    backgroundColor: '#65dfd2',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 99,
+    ...Platform.select({
+      web: { boxShadow: '0 8px 24px rgba(79, 209, 197, 0.35)' },
+      default: { shadowColor: 'rgba(79,209,197,0.35)', shadowOffset: {width:0, height:8}, shadowOpacity: 1, shadowRadius: 24 }
+    })
+  },
+  btnPrimaryText: {
+    color: 'white',
+    fontSize: 16.8, // 1.05rem
+    fontWeight: '600',
+  },
+  btnSecondary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconWrapper: {
+    width: 36,
+    height: 36,
+    backgroundColor: 'rgba(101, 223, 210, 0.15)',
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  btnSecondaryText: {
+    color: '#65dfd2',
+    fontSize: 16.8,
+    fontWeight: '600',
+  },
+  heroStats: {
+    flexDirection: 'row',
+    gap: 48,
+  },
+  heroStatsTablet: {
+    gap: 24,
+  },
+  heroStatsMobile: {
+    justifyContent: 'center',
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  statIcon: {
+    width: 44,
+    height: 44,
+    backgroundColor: '#65dfd2',
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statInfo: {
+    flexDirection: 'column',
+  },
+  statValue: {
+    fontSize: 20, // 1.25rem
+    fontWeight: '700',
+    color: '#1f2937',
+    lineHeight: 24,
+  },
+  statLabel: {
+    fontSize: 13.6, // 0.85rem
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  heroVisual: {
+    flex: 1.2,
+    alignSelf: 'stretch',
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
     flexDirection: 'row',
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
+  heroVisualMobile: {
+    width: '100%',
     justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+    minHeight: 400,
   },
-  title: {
-    textAlign: 'center',
+  visualShape: {
+    position: 'absolute',
+    top: -150,
+    bottom: 0,
+    right: 0,
+    left: 0,
+    backgroundColor: Platform.OS === 'web' ? '#65dfd2' : 'transparent',
+    zIndex: 1,
+    overflow: 'hidden',
   },
-  code: {
-    textTransform: 'uppercase',
+  visualShapeMobile: {
+    width: '100vw' as any,
+    right: -40,
+    top: '10%',
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  shapeCircle: {
+    position: 'absolute',
+    borderRadius: 999,
+    borderWidth: 24,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+    pointerEvents: 'none',
+  },
+  shapeCircle1: {
+    width: 320,
+    height: 320,
+    top: '15%',
+    right: '18%',
+  },
+  shapeCircle2: {
+    width: 220,
+    height: 220,
+    bottom: '12%',
+    right: -40,
+  },
+  shapeCircle3: {
+    width: 160,
+    height: 160,
+    top: '52%',
+    left: '22%',
+  },
+  visualImage: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    height: '95%',
+    width: '90%',
+    zIndex: 2,
+    pointerEvents: 'none',
+  },
+  visualImageTablet: {
+    width: '95%',
+    right: 20,
+  },
+  visualImageMobile: {
+    position: 'relative',
+    height: 'auto',
+    maxHeight: 350,
+    marginTop: 40,
   },
 });
