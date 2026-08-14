@@ -20,7 +20,7 @@ import {
 import Svg, { Circle, Rect, Path, G } from 'react-native-svg';
 
 import { useAuth } from '../../context/AuthContext';
-import { MOCK_PATIENTS } from '../../data/mockData';
+import { useAppState } from '../../context/AppStateContext';
 import { useLocalSearchParams, router } from 'expo-router';
 
 export default function PatientDetailScreen() {
@@ -29,8 +29,9 @@ export default function PatientDetailScreen() {
   const isMobile = width <= 1024;
   
   const { userRole, logout } = useAuth();
+  const { patients } = useAppState();
   const { id } = useLocalSearchParams();
-  const activePatient = MOCK_PATIENTS.find(p => p.id === id) || MOCK_PATIENTS[0];
+  const activePatient = patients.find(p => p.id === id) || patients[0];
 
   const [activeNav, setActiveNav] = useState('overview');
   const [showNotif, setShowNotif] = useState(false);
@@ -97,7 +98,7 @@ export default function PatientDetailScreen() {
             <View style={styles.contentHeader}>
               <View style={styles.userGreeting}>
                 <Text style={styles.greetingSubtitle}>Hi, {userRole === 'DOCTOR' ? 'Dr. Sakif' : 'Clinician'}</Text>
-                <Text style={styles.greetingTitle}>Patient Record</Text>
+                <Text style={styles.greetingTitle}>{activePatient.name}'s Record</Text>
               </View>
               
               <View style={styles.headerActions}>
@@ -150,18 +151,23 @@ export default function PatientDetailScreen() {
             </View>
 
             {/* Hero Clinical Recommendation Banner */}
-            <LinearGradient colors={['#4fd1c5', '#38b2ac']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.heroBanner}>
-              <View style={[styles.heroContent, isMobile && styles.heroContentMobile]}>
-                <View style={styles.heroTag}>
-                  <View style={styles.tagPulse} />
-                  <Text style={styles.tagText}>AI Clinical Decision Support</Text>
-                </View>
-                <Text style={styles.heroHeading}>High AMR Risk Detected: Escalation Recommended</Text>
-                <Text style={styles.heroDesc}>
-                  Consider escalating from <Text style={{fontFamily: 'Inter_700Bold'}}>Ceftriaxone</Text> to <Text style={{fontFamily: 'Inter_700Bold'}}>Meropenem</Text> due to increasing AMR risk index (84%) and recent broad-spectrum beta-lactam exposure.
-                </Text>
-                
-                {(!heroAccepted && !heroOverridden) && (
+            {activePatient.recommendations && activePatient.recommendations.length > 0 && (
+              <LinearGradient colors={['#4fd1c5', '#38b2ac']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.heroBanner}>
+                <View style={[styles.heroContent, isMobile && styles.heroContentMobile]}>
+                  <View style={styles.heroTag}>
+                    <View style={styles.tagPulse} />
+                    <Text style={styles.tagText}>AI Clinical Decision Support (Confidence: {activePatient.recommendations[0].confidence}%)</Text>
+                  </View>
+                  <Text style={styles.heroHeading}>
+                    {activePatient.recommendations[0].type === 'escalation' ? 'High AMR Risk Detected: Escalation Recommended' : 
+                     activePatient.recommendations[0].type === 'de-escalation' ? 'Low Risk Detected: De-escalation Recommended' : 
+                     'Protocol Review Recommended'}
+                  </Text>
+                  <Text style={styles.heroDesc}>
+                    {activePatient.recommendations[0].description}
+                  </Text>
+                  
+                  {(!heroAccepted && !heroOverridden) && (
                   <View style={styles.heroActions}>
                     <TouchableOpacity style={styles.heroBtnPrimary} onPress={() => setHeroAccepted(true)}>
                       <Check color="#0d9488" size={16} strokeWidth={3} />
@@ -219,6 +225,7 @@ export default function PatientDetailScreen() {
                 </View>
               )}
             </LinearGradient>
+            )}
 
             {/* Pinned Key Information */}
             <View style={styles.pinnedSection}>
@@ -235,56 +242,48 @@ export default function PatientDetailScreen() {
 
               <View style={[styles.pinnedGrid, isTablet && styles.pinnedGridTablet, isMobile && styles.pinnedGridMobile]}>
                 <View style={styles.pinnedCard}>
-                  <View style={[styles.cardIconAvatar, { backgroundColor: '#fee2e2' }]}>
-                    <TrendingUp color="#ef4444" size={20} />
+                  <View style={[styles.cardIconAvatar, { backgroundColor: activePatient.amrRiskStatus === 'High' || activePatient.amrRiskStatus === 'Critical Escalation' ? '#fee2e2' : '#fef3c7' }]}>
+                    <TrendingUp color={activePatient.amrRiskStatus === 'High' || activePatient.amrRiskStatus === 'Critical Escalation' ? '#ef4444' : '#d97706'} size={20} />
                   </View>
                   <View style={styles.pinnedInfo}>
                     <Text style={styles.pinnedLabel}>AMR Risk Score</Text>
                     <View style={styles.pinnedValWrap}>
-                      <Text style={styles.pinnedValue}>84%</Text>
-                      <View style={[styles.statusChip, { backgroundColor: '#fee2e2' }]}><Text style={[styles.statusChipText, { color: '#dc2626' }]}>High Risk</Text></View>
+                      <Text style={styles.pinnedValue}>{activePatient.amrRiskScore}%</Text>
+                      <View style={[styles.statusChip, { backgroundColor: activePatient.amrRiskStatus === 'High' || activePatient.amrRiskStatus === 'Critical Escalation' ? '#fee2e2' : '#fef3c7' }]}>
+                        <Text style={[styles.statusChipText, { color: activePatient.amrRiskStatus === 'High' || activePatient.amrRiskStatus === 'Critical Escalation' ? '#dc2626' : '#d97706' }]}>{activePatient.amrRiskStatus} Risk</Text>
+                      </View>
                     </View>
                   </View>
                 </View>
 
-                <View style={styles.pinnedCard}>
-                  <View style={[styles.cardIconAvatar, { backgroundColor: '#ffedd5' }]}>
-                    <Droplet color="#f97316" size={20} />
-                  </View>
-                  <View style={styles.pinnedInfo}>
-                    <Text style={styles.pinnedLabel}>WBC Count (10³/µL)</Text>
-                    <View style={styles.pinnedValWrap}>
-                      <Text style={styles.pinnedValue}>14.2</Text>
-                      <View style={[styles.statusChip, { backgroundColor: '#fef3c7' }]}><Text style={[styles.statusChipText, { color: '#d97706' }]}>Elevated</Text></View>
+                {activePatient.biomarkers.slice(0, 3).map((biomarker, idx) => {
+                  const colors = [
+                    { bg: '#ffedd5', icon: '#f97316' }, // Orange
+                    { bg: '#f3e8ff', icon: '#a855f7' }, // Purple
+                    { bg: '#dbeafe', icon: '#3b82f6' }  // Blue
+                  ];
+                  const color = colors[idx % colors.length];
+                  
+                  return (
+                    <View key={biomarker.id} style={styles.pinnedCard}>
+                      <View style={[styles.cardIconAvatar, { backgroundColor: color.bg }]}>
+                        <Droplet color={color.icon} size={20} />
+                      </View>
+                      <View style={styles.pinnedInfo}>
+                        <Text style={styles.pinnedLabel}>{biomarker.name}</Text>
+                        <View style={styles.pinnedValWrap}>
+                          <Text style={styles.pinnedValue}>{biomarker.value}</Text>
+                          <Text style={styles.pinnedUnit}>{biomarker.unit}</Text>
+                          {biomarker.status !== 'normal' && (
+                            <View style={[styles.statusChip, { backgroundColor: '#fee2e2', marginLeft: 6 }]}>
+                              <Text style={[styles.statusChipText, { color: '#ef4444' }]}>{biomarker.status}</Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
                     </View>
-                  </View>
-                </View>
-
-                <View style={styles.pinnedCard}>
-                  <View style={[styles.cardIconAvatar, { backgroundColor: '#f3e8ff' }]}>
-                    <HeartPulse color="#a855f7" size={20} />
-                  </View>
-                  <View style={styles.pinnedInfo}>
-                    <Text style={styles.pinnedLabel}>Blood Pressure</Text>
-                    <View style={styles.pinnedValWrap}>
-                      <Text style={styles.pinnedValue}>128/84</Text>
-                      <Text style={styles.pinnedUnit}>mmHg</Text>
-                    </View>
-                  </View>
-                </View>
-
-                <View style={styles.pinnedCard}>
-                  <View style={[styles.cardIconAvatar, { backgroundColor: '#dbeafe' }]}>
-                    <Activity color="#3b82f6" size={20} />
-                  </View>
-                  <View style={styles.pinnedInfo}>
-                    <Text style={styles.pinnedLabel}>eGFR (Renal)</Text>
-                    <View style={styles.pinnedValWrap}>
-                      <Text style={styles.pinnedValue}>62</Text>
-                      <Text style={styles.pinnedUnit}>mL/min</Text>
-                    </View>
-                  </View>
-                </View>
+                  );
+                })}
               </View>
             </View>
 
@@ -311,37 +310,33 @@ export default function PatientDetailScreen() {
                 </View>
 
                 <View style={styles.biomarkerFluidWrapper}>
-                  <View style={styles.fluidMeterItem}>
-                    <Text style={styles.meterValue}>4.2</Text>
-                    <View style={styles.meterBarTrack}>
-                      <LinearGradient colors={['#f87171', '#ef4444']} style={[styles.meterBarFill, { height: '82%' }]} />
-                    </View>
-                    <Text style={styles.meterLabel}>PCT (µg/L)</Text>
-                  </View>
+                  {activePatient.biomarkers.map((biomarker) => {
+                    // Normalize value to a percentage for the bar (dummy heuristic)
+                    let barPercent = Math.min(100, Math.max(10, biomarker.value * 2));
+                    if (biomarker.name.includes('WBC')) barPercent = Math.min(100, biomarker.value * 5);
+                    if (biomarker.name.includes('Lactate')) barPercent = Math.min(100, biomarker.value * 20);
+                    if (biomarker.name.includes('Creatinine')) barPercent = Math.min(100, biomarker.value * 30);
+                    
+                    const fillColors = biomarker.status === 'critical' ? ['#f87171', '#ef4444'] : 
+                                     biomarker.status === 'elevated' ? ['#fbbf24', '#f59e0b'] : 
+                                     ['#2dd4bf', '#14b8a6'];
 
-                  <View style={styles.fluidMeterItem}>
-                    <Text style={styles.meterValue}>3.1</Text>
-                    <View style={styles.meterBarTrack}>
-                      <LinearGradient colors={['#fbbf24', '#f59e0b']} style={[styles.meterBarFill, { height: '65%' }]} />
-                    </View>
-                    <Text style={styles.meterLabel}>Lactate</Text>
-                  </View>
-
-                  <View style={styles.fluidMeterItem}>
-                    <Text style={styles.meterValue}>1.8</Text>
-                    <View style={styles.meterBarTrack}>
-                      <LinearGradient colors={['#2dd4bf', '#14b8a6']} style={[styles.meterBarFill, { height: '45%' }]} />
-                    </View>
-                    <Text style={styles.meterLabel}>Creatinine</Text>
-                  </View>
-
-                  <View style={styles.fluidMeterItem}>
-                    <Text style={styles.meterValue}>140</Text>
-                    <View style={styles.meterBarTrack}>
-                      <LinearGradient colors={['#60a5fa', '#3b82f6']} style={[styles.meterBarFill, { height: '55%' }]} />
-                    </View>
-                    <Text style={styles.meterLabel}>Platelets</Text>
-                  </View>
+                    return (
+                      <View key={biomarker.id} style={styles.fluidMeterItem}>
+                        <Text style={styles.meterValue}>{biomarker.value}</Text>
+                        <View style={styles.meterBarTrack}>
+                          <LinearGradient colors={fillColors as [string, string]} style={[styles.meterBarFill, { height: `${barPercent}%` }]} />
+                        </View>
+                        <Text style={styles.meterLabel}>{biomarker.name.split(' ')[0]}</Text>
+                      </View>
+                    );
+                  })}
+                  
+                  {activePatient.biomarkers.length === 0 && (
+                     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                       <Text style={{ color: '#94a3b8' }}>No biomarker telemetry available.</Text>
+                     </View>
+                  )}
                 </View>
               </View>
 
@@ -359,66 +354,55 @@ export default function PatientDetailScreen() {
                     <Svg width={130} height={130} viewBox="0 0 130 130" style={{ transform: [{ rotate: '-90deg' }] }}>
                       {/* Background Ring */}
                       <Circle cx="65" cy="65" r="48" stroke="#f1f5f9" strokeWidth="18" fill="none" />
-                      {/* Meropenem (42%) */}
-                      <Circle
-                        cx="65" cy="65" r="48"
-                        stroke="#14b8a6" strokeWidth="18"
-                        fill="none"
-                        strokeDasharray={`${2 * Math.PI * 48 * 0.42} ${2 * Math.PI * 48 * 0.58}`}
-                        strokeDashoffset="0"
-                      />
-                      {/* Ceftriaxone (28%) */}
-                      <Circle
-                        cx="65" cy="65" r="48"
-                        stroke="#3b82f6" strokeWidth="18"
-                        fill="none"
-                        strokeDasharray={`${2 * Math.PI * 48 * 0.28} ${2 * Math.PI * 48 * 0.72}`}
-                        strokeDashoffset={`${-2 * Math.PI * 48 * 0.42}`}
-                      />
-                      {/* Vancomycin (18%) */}
-                      <Circle
-                        cx="65" cy="65" r="48"
-                        stroke="#f59e0b" strokeWidth="18"
-                        fill="none"
-                        strokeDasharray={`${2 * Math.PI * 48 * 0.18} ${2 * Math.PI * 48 * 0.82}`}
-                        strokeDashoffset={`${-2 * Math.PI * 48 * 0.70}`}
-                      />
-                      {/* Others (12%) */}
-                      <Circle
-                        cx="65" cy="65" r="48"
-                        stroke="#94a3b8" strokeWidth="18"
-                        fill="none"
-                        strokeDasharray={`${2 * Math.PI * 48 * 0.12} ${2 * Math.PI * 48 * 0.88}`}
-                        strokeDashoffset={`${-2 * Math.PI * 48 * 0.88}`}
-                      />
+                      {(() => {
+                        const activeMeds = activePatient.medications.filter(m => m.status === 'active');
+                        if (activeMeds.length === 0) return null;
+                        
+                        const share = 1 / activeMeds.length;
+                        const colors = ['#14b8a6', '#3b82f6', '#f59e0b', '#94a3b8'];
+                        let offsetAcc = 0;
+                        
+                        return activeMeds.map((med, idx) => {
+                          const color = colors[idx % colors.length];
+                          const offset = offsetAcc;
+                          offsetAcc += share;
+                          return (
+                            <Circle
+                              key={med.id}
+                              cx="65" cy="65" r="48"
+                              stroke={color} strokeWidth="18"
+                              fill="none"
+                              strokeDasharray={`${2 * Math.PI * 48 * share} ${2 * Math.PI * 48 * (1 - share)}`}
+                              strokeDashoffset={`${-2 * Math.PI * 48 * offset}`}
+                            />
+                          );
+                        });
+                      })()}
                     </Svg>
                     <View style={styles.donutCenterStat}>
-                      <Text style={styles.donutNumber}>84%</Text>
-                      <Text style={styles.donutSub}>Target</Text>
+                      <Text style={styles.donutNumber}>{activePatient.medications.filter(m => m.status === 'active').length === 0 ? '0%' : '100%'}</Text>
+                      <Text style={styles.donutSub}>Active</Text>
                     </View>
                   </View>
 
                   <View style={styles.donutLegendGrid}>
-                    <View style={styles.legendBadge}>
-                      <View style={[styles.legendDot, { backgroundColor: '#14b8a6' }]} />
-                      <Text style={styles.legendName} numberOfLines={1}>Meropenem</Text>
-                      <Text style={styles.legendPercent}>42%</Text>
-                    </View>
-                    <View style={styles.legendBadge}>
-                      <View style={[styles.legendDot, { backgroundColor: '#3b82f6' }]} />
-                      <Text style={styles.legendName} numberOfLines={1}>Ceftriaxone</Text>
-                      <Text style={styles.legendPercent}>28%</Text>
-                    </View>
-                    <View style={styles.legendBadge}>
-                      <View style={[styles.legendDot, { backgroundColor: '#f59e0b' }]} />
-                      <Text style={styles.legendName} numberOfLines={1}>Vancomycin</Text>
-                      <Text style={styles.legendPercent}>18%</Text>
-                    </View>
-                    <View style={styles.legendBadge}>
-                      <View style={[styles.legendDot, { backgroundColor: '#94a3b8' }]} />
-                      <Text style={styles.legendName} numberOfLines={1}>Others</Text>
-                      <Text style={styles.legendPercent}>12%</Text>
-                    </View>
+                    {activePatient.medications.filter(m => m.status === 'active').map((med, idx) => {
+                      const colors = ['#14b8a6', '#3b82f6', '#f59e0b', '#94a3b8'];
+                      const color = colors[idx % colors.length];
+                      const activeMeds = activePatient.medications.filter(m => m.status === 'active');
+                      const sharePercent = Math.round((1 / activeMeds.length) * 100);
+                      
+                      return (
+                        <View key={med.id} style={styles.legendBadge}>
+                          <View style={[styles.legendDot, { backgroundColor: color }]} />
+                          <Text style={styles.legendName} numberOfLines={1}>{med.name}</Text>
+                          <Text style={styles.legendPercent}>{sharePercent}%</Text>
+                        </View>
+                      );
+                    })}
+                    {activePatient.medications.filter(m => m.status === 'active').length === 0 && (
+                      <Text style={{ color: '#94a3b8', fontSize: 13 }}>No active medications</Text>
+                    )}
                   </View>
                 </View>
               </View>
